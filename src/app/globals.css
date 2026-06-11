@@ -1,15 +1,15 @@
 @import "tailwindcss";
 
 :root {
-  --background: #030712;
-  --card: #111827;
-  --primary: #06b6d4;
-  --secondary: #22d3ee;
-  --accent: #e5e7eb;
-  --foreground: #f8fafc;
-  --muted: #94a3b8;
-  --border: #1f2937;
-  --ring: rgba(34, 211, 238, 0.45);
+  --background: #1c1917;
+  --card: #292524;
+  --primary: #c08457;
+  --secondary: #d6ad60;
+  --accent: #faf3e0;
+  --foreground: #ffffff;
+  --muted: #a1a1aa;
+  --border: #3a312d;
+  --ring: rgba(214, 173, 96, 0.4);
 }
 
 @theme inline {
@@ -35,10 +35,7 @@ html {
 }
 
 body {
-  background:
-    radial-gradient(circle at top left, rgba(6, 182, 212, 0.25), transparent 40%),
-    radial-gradient(circle at bottom right, rgba(34, 211, 238, 0.2), transparent 40%),
-    #030712;
+  background: #1c1917;
   color: var(--foreground);
   font-family: var(--font-sans);
 }
@@ -56,15 +53,11 @@ select {
 }
 
 ::selection {
-  background: rgba(34, 211, 238, 0.28);
-}
-
-@utility glass-panel {
-  @apply border border-white/10 bg-white/5 shadow-[0_24px_80px_rgba(8,15,32,0.45)] backdrop-blur-xl;
+  background: rgba(214, 173, 96, 0.22);
 }
 
 @utility cyan-ring {
   box-shadow:
-    0 0 0 1px rgba(34, 211, 238, 0.18),
-    0 0 32px rgba(6, 182, 212, 0.18);
+    0 0 0 1px rgba(214, 173, 96, 0.14),
+    0 0 32px rgba(192, 132, 87, 0.14);
 }

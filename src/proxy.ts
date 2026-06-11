@@ -7,13 +7,21 @@ const isProtectedRoute = createRouteMatcher([
   "/portfolio(.*)",
   "/exports(.*)",
   "/pricing(.*)",
+  "/setting(.*)",
+  "/settings(.*)",
+  "/user-profile(.*)",
 ]);
 
 export default clerkMiddleware(async (auth, req) => {
   if (isProtectedRoute(req)) {
-    await auth.protect();
+    await auth.protect({
+      unauthenticatedUrl: new URL("/sign-in", req.url).toString(),
+    });
   }
-});
+}, (req) => ({
+  signInUrl: new URL("/sign-in", req.url).toString(),
+  signUpUrl: new URL("/sign-up", req.url).toString(),
+}));
 
 export const config = {
   matcher: [

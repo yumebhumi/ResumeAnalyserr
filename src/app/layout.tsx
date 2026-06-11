@@ -1,5 +1,9 @@
 import type { Metadata } from "next";
 import { ClerkProvider } from "@clerk/nextjs";
+
+import { clerkAppearance } from "@/lib/clerk-appearance";
+import { clerkLocalization } from "@/lib/clerk-localization";
+
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -16,7 +20,18 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className="min-h-screen bg-background text-foreground antialiased">
-        <ClerkProvider>{children}</ClerkProvider>
+        <ClerkProvider
+          appearance={clerkAppearance}
+          localization={clerkLocalization}
+          signInForceRedirectUrl="/dashboard"
+          signInUrl="/sign-in"
+          signInFallbackRedirectUrl="/dashboard"
+          signUpForceRedirectUrl="/dashboard"
+          signUpUrl="/sign-up"
+          signUpFallbackRedirectUrl="/dashboard"
+        >
+          {children}
+        </ClerkProvider>
       </body>
     </html>
   );

@@ -12,10 +12,10 @@ export function DashboardCard({
   detail: string;
 }) {
   return (
-    <div className="rounded-3xl border border-white/10 bg-slate-950/55 p-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]">
+    <div className="rounded-3xl border border-white/10 bg-[#201c1b]/90 p-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]">
       <div className="flex items-center justify-between gap-3">
         <p className="text-sm text-slate-400">{title}</p>
-        <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-cyan-400/10 text-cyan-300">
+        <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[#C08457]/10 text-[#D6AD60]">
           <Icon className="h-4 w-4" />
         </div>
       </div>

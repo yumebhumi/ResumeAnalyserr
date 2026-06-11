@@ -19,6 +19,8 @@
     "@radix-ui/react-slot": "^1.2.5",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "dodopayments": "^2.36.0",
+    "dodopayments-checkout": "^1.9.4",
     "dotenv": "^17.4.2",
     "drizzle-orm": "^0.45.2",
     "framer-motion": "^12.40.0",

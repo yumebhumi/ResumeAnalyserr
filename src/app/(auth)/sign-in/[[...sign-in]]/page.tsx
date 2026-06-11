@@ -1,9 +1,19 @@
 import { SignIn } from "@clerk/nextjs";
 
+import { AuthShell } from "@/components/auth-shell";
+
 export default function SignInPage() {
   return (
-    <main className="flex min-h-screen items-center justify-center px-4 py-10">
-      <SignIn />
-    </main>
+    <AuthShell
+      title="Your recruiter-ready career workspace."
+      subtitle="Analyze your resume, improve your ATS score, and build a polished portfolio with AI."
+    >
+      <SignIn
+        fallbackRedirectUrl="/dashboard"
+        path="/sign-in"
+        routing="path"
+        signUpUrl="/sign-up"
+      />
+    </AuthShell>
   );
 }

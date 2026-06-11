@@ -6,29 +6,26 @@ export default function AnalyzePage() {
     <div className="grid gap-6 pb-8 lg:grid-cols-[1.2fr_0.8fr]">
       <SectionCard
         title="Resume Analysis"
-        description="Upload a technical resume and get ATS-style feedback from Gemini."
+        description="Upload a real PDF or DOCX resume and get ATS-style analysis, score breakdowns, and saved AI suggestions."
       >
         <AnalyzeForm />
       </SectionCard>
 
       <SectionCard
-        title="Analysis Output"
-        description="What the Gemini pipeline now returns and persists."
+        title="Pipeline Output"
+        description="What the backend now extracts, analyzes, validates, and saves."
       >
-        <div className="space-y-3 font-mono text-xs text-stone-700">
+        <div className="space-y-3 text-sm text-[#D6D3D1]">
           {[
-            "atsScore: number",
-            "summary: string",
-            "recruiterSummary: string",
-            "keywordCoverage: string[]",
-            "formattingIssues: string[]",
-            "weakBullets: { original, improved, reason }[]",
-            "missingSkills: string[]",
-            "strengths: string[]",
+            "PDF and DOCX resume upload with 5 MB validation",
+            "Readable text extraction and normalization",
+            "Gemini JSON analysis with ATS and category scores",
+            "Saved report in Neon database per authenticated user",
+            "Real result cards for keywords, strengths, weaknesses, and recommended roles",
           ].map((row) => (
             <div
               key={row}
-              className="rounded-2xl border border-stone-200 bg-stone-50 px-4 py-3"
+              className="rounded-[18px] border border-[rgba(250,243,224,0.08)] bg-[#221e1d] px-4 py-3"
             >
               {row}
             </div>

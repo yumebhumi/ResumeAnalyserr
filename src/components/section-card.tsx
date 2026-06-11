@@ -14,14 +14,14 @@ export function SectionCard({
   return (
     <section
       className={cn(
-        "rounded-[28px] border border-stone-200/70 bg-white/85 p-6 shadow-[0_24px_80px_rgba(40,28,10,0.08)] backdrop-blur",
+        "rounded-[24px] border border-[rgba(250,243,224,0.08)] bg-[#292524] p-6 shadow-[0_16px_40px_rgba(0,0,0,0.22)]",
         className,
       )}
     >
       <div className="mb-5">
-        <h2 className="text-lg font-semibold text-stone-950">{title}</h2>
+        <h2 className="text-lg font-semibold text-white">{title}</h2>
         {description ? (
-          <p className="mt-1 text-sm text-stone-600">{description}</p>
+          <p className="mt-1 text-sm text-[#D6D3D1]">{description}</p>
         ) : null}
       </div>
       {children}

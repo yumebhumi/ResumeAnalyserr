@@ -5,7 +5,66 @@ const serverEnvSchema = z.object({
   CLERK_SECRET_KEY: z.string().min(1),
   DATABASE_URL: z.string().url(),
   GEMINI_API_KEY: z.string().min(1),
-  GITHUB_TOKEN: z.string().min(1).optional(),
+  DODO_PAYMENTS_API_KEY: z.preprocess(
+    (value) => {
+      if (typeof value === "string" && value.trim().length === 0) {
+        return undefined;
+      }
+
+      return value;
+    },
+    z.string().min(1).optional(),
+  ),
+  DODO_PAYMENTS_ENVIRONMENT: z.preprocess(
+    (value) => {
+      if (typeof value === "string" && value.trim().length === 0) {
+        return undefined;
+      }
+
+      return value;
+    },
+    z.enum(["test_mode", "live_mode"]).optional(),
+  ),
+  DODO_PAYMENTS_WEBHOOK_KEY: z.preprocess(
+    (value) => {
+      if (typeof value === "string" && value.trim().length === 0) {
+        return undefined;
+      }
+
+      return value;
+    },
+    z.string().min(1).optional(),
+  ),
+  DODO_PRO_PRODUCT_ID: z.preprocess(
+    (value) => {
+      if (typeof value === "string" && value.trim().length === 0) {
+        return undefined;
+      }
+
+      return value;
+    },
+    z.string().min(1).optional(),
+  ),
+  NEXT_PUBLIC_APP_URL: z.preprocess(
+    (value) => {
+      if (typeof value === "string" && value.trim().length === 0) {
+        return undefined;
+      }
+
+      return value;
+    },
+    z.string().url().optional(),
+  ),
+  GITHUB_TOKEN: z.preprocess(
+    (value) => {
+      if (typeof value === "string" && value.trim().length === 0) {
+        return undefined;
+      }
+
+      return value;
+    },
+    z.string().min(1).optional(),
+  ),
 });
 
 type ServerEnv = z.infer<typeof serverEnvSchema>;
@@ -23,6 +82,11 @@ export function getServerEnv() {
     CLERK_SECRET_KEY: process.env.CLERK_SECRET_KEY,
     DATABASE_URL: process.env.DATABASE_URL,
     GEMINI_API_KEY: process.env.GEMINI_API_KEY,
+    DODO_PAYMENTS_API_KEY: process.env.DODO_PAYMENTS_API_KEY,
+    DODO_PAYMENTS_ENVIRONMENT: process.env.DODO_PAYMENTS_ENVIRONMENT,
+    DODO_PAYMENTS_WEBHOOK_KEY: process.env.DODO_PAYMENTS_WEBHOOK_KEY,
+    DODO_PRO_PRODUCT_ID: process.env.DODO_PRO_PRODUCT_ID,
+    NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL,
     GITHUB_TOKEN: process.env.GITHUB_TOKEN,
   });
 

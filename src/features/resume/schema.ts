@@ -1,20 +1,20 @@
 import { z } from "zod";
 
-export const weakBulletSchema = z.object({
-  original: z.string().min(1),
-  improved: z.string().min(1),
-  reason: z.string().min(1),
-});
-
 export const resumeAnalysisSchema = z.object({
   atsScore: z.number().int().min(0).max(100),
+  keywordMatch: z.number().int().min(0).max(100),
+  formattingScore: z.number().int().min(0).max(100),
+  skillsScore: z.number().int().min(0).max(100),
+  experienceScore: z.number().int().min(0).max(100),
+  projectsScore: z.number().int().min(0).max(100),
   summary: z.string().min(1),
-  recruiterSummary: z.string().min(1),
-  keywordCoverage: z.array(z.string().min(1)).default([]),
-  formattingIssues: z.array(z.string().min(1)).default([]),
   missingSkills: z.array(z.string().min(1)).default([]),
+  missingKeywords: z.array(z.string().min(1)).default([]),
   strengths: z.array(z.string().min(1)).default([]),
-  weakBullets: z.array(weakBulletSchema).default([]),
+  weaknesses: z.array(z.string().min(1)).default([]),
+  suggestions: z.array(z.string().min(1)).default([]),
+  improvedBullets: z.array(z.string().min(1)).default([]),
+  recommendedRoles: z.array(z.string().min(1)).default([]),
 });
 
 export const analyzeResumeResponseSchema = z.object({

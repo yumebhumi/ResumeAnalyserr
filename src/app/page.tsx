@@ -1,338 +1,410 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
-import { motion } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import {
   ArrowRight,
   BarChart3,
+  CheckCircle2,
   FileSearch,
-  FileText,
   GitBranch,
   LayoutTemplate,
-  ShieldCheck,
-  Sparkles,
-  Workflow,
+  ScanSearch,
 } from "lucide-react";
 
-import { DashboardCard } from "@/components/dashboard-card";
 import { FeatureCard } from "@/components/feature-card";
 import { Footer } from "@/components/footer";
 import { Navbar } from "@/components/navbar";
 import { PricingCard } from "@/components/pricing-card";
-import { ScoreCard } from "@/components/score-card";
-import { SectionHeading } from "@/components/section-heading";
 import { Button } from "@/components/ui/button";
 
-const featureCards = [
+const features = [
   {
     icon: FileSearch,
-    title: "AI Resume Analyzer",
+    title: "AI Resume Analysis",
     description:
-      "Parse PDF and DOCX resumes, score ATS readiness, and surface missing keywords, formatting gaps, and weak bullets in one pass.",
-  },
-  {
-    icon: GitBranch,
-    title: "GitHub Analyzer",
-    description:
-      "Review repository quality, project depth, commit signals, and technology patterns to build a stronger developer profile.",
+      "Checks ATS score, keywords, formatting, and recruiter readability.",
   },
   {
     icon: LayoutTemplate,
     title: "Portfolio Builder",
     description:
-      "Turn resume data and GitHub signals into a polished personal site draft with structured sections and recruiter-facing copy.",
+      "Generates a clean developer portfolio from your resume data.",
+  },
+  {
+    icon: GitBranch,
+    title: "GitHub Insights",
+    description:
+      "Finds your strongest repositories and suggests profile improvements.",
   },
 ];
 
-const dashboardMetrics = [
-  { icon: FileText, title: "Resumes analyzed", value: "24.8k", detail: "+18% this month" },
-  { icon: BarChart3, title: "Average ATS lift", value: "+27%", detail: "After guided rewrites" },
-  { icon: Workflow, title: "Portfolio drafts", value: "8.1k", detail: "Generated in under 3 min" },
+const steps = [
+  {
+    title: "Upload Resume",
+    body: "Upload your PDF or DOCX resume.",
+  },
+  {
+    title: "Get AI Feedback",
+    body: "Receive ATS score, missing keywords, and stronger bullet points.",
+  },
+  {
+    title: "Build Portfolio",
+    body: "Generate a polished portfolio website from your resume.",
+  },
 ];
 
-const scoreCards = [
-  {
-    label: "ATS Match",
-    score: "92",
-    detail: "Strong role alignment, measurable project outcomes, and clean keyword coverage for frontend engineering roles.",
-  },
-  {
-    label: "GitHub Signal",
-    score: "88",
-    detail: "Consistent activity, meaningful README quality, and a healthy distribution of product and systems work.",
-  },
-  {
-    label: "Portfolio Readiness",
-    score: "95",
-    detail: "Enough source material to auto-generate a portfolio that feels specific, current, and credible.",
-  },
+const heroTaglines = [
+  "AI Resume + Portfolio Builder",
+  "ATS Score Optimizer",
+  "GitHub Profile Analyzer",
+  "Recruiter-Ready Career Workspace",
+  "Build Your Portfolio in Minutes",
 ];
 
 export default function Home() {
+  const [activeTagline, setActiveTagline] = useState(0);
+
+  useEffect(() => {
+    const interval = window.setInterval(() => {
+      setActiveTagline((current) => (current + 1) % heroTaglines.length);
+    }, 1500);
+
+    return () => window.clearInterval(interval);
+  }, []);
+
   return (
-    <main className="min-h-screen">
-      <div className="mx-auto max-w-7xl px-4 py-4 sm:px-6 lg:px-8">
-        <Navbar />
-      </div>
+    <main className="h-screen snap-y snap-mandatory overflow-y-auto">
+      <section className="snap-start px-4 pb-12 pt-4 sm:px-6 lg:min-h-screen lg:px-8">
+        <div className="mx-auto max-w-[1280px]">
+          <Navbar />
+        </div>
 
-      <section className="relative overflow-hidden px-4 pb-18 pt-10 sm:px-6 lg:px-8">
-        <div className="mx-auto grid max-w-7xl gap-12 lg:grid-cols-[1.05fr_0.95fr] lg:items-end">
+        <div className="mx-auto mt-6 grid max-w-[1200px] gap-10 lg:min-h-[calc(100vh-8rem)] lg:grid-cols-[1.02fr_0.98fr] lg:items-center">
           <motion.div
-            initial={{ opacity: 0, y: 28 }}
+            initial={{ opacity: 0, y: 24 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.55, ease: "easeOut" }}
-            className="space-y-8"
+            transition={{ duration: 0.45, ease: "easeOut" }}
+            className="space-y-7"
           >
-            <div className="inline-flex items-center gap-2 rounded-full border border-cyan-300/20 bg-cyan-400/8 px-4 py-2 text-sm text-cyan-200">
-              <ShieldCheck className="h-4 w-4" />
-              Built for modern candidate workflows and recruiting teams
-            </div>
-
-            <div className="space-y-6">
-              <h1 className="max-w-4xl text-5xl font-semibold leading-tight text-slate-50 sm:text-6xl lg:text-7xl">
-                HireMe AI
-              </h1>
-              <p className="max-w-3xl text-xl leading-9 text-slate-300 sm:text-2xl">
-                AI Resume Analyzer, Portfolio Builder, and GitHub Analyzer for
-                candidates who want stronger signal and teams who want faster
-                screening.
+            <div className="space-y-4">
+              <p className="text-[22px] font-bold tracking-[-0.02em] text-[#FAF3E0]">
+                HireMe AI ☕
               </p>
-              <p className="max-w-2xl text-base leading-8 text-slate-400">
-                Upload a resume, measure ATS quality, inspect GitHub depth, and
-                turn both into a recruiter-ready portfolio draft from one
-                premium dark workspace.
+              <div className="h-12">
+                <AnimatePresence mode="wait">
+                  <motion.p
+                    key={heroTaglines[activeTagline]}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    transition={{ duration: 0.35, ease: "easeOut" }}
+                    className="inline-flex items-center rounded-full border border-[rgba(250,243,224,0.10)] bg-[rgba(41,37,36,0.75)] px-6 py-3 text-base font-medium text-[#D6AD60]"
+                  >
+                    {heroTaglines[activeTagline]}
+                  </motion.p>
+                </AnimatePresence>
+              </div>
+              <h1 className="max-w-4xl text-4xl font-bold leading-[1.02] text-white sm:text-5xl lg:text-[72px]">
+                Land More Interviews with AI
+              </h1>
+              <p className="max-w-2xl text-lg leading-7 text-[#D6D3D1]">
+                Analyze your resume, improve your ATS score, review your GitHub
+                profile, and build a recruiter-ready portfolio in minutes.
               </p>
             </div>
 
             <div className="flex flex-wrap items-center gap-4">
               <Button asChild size="lg">
-                <Link href="/dashboard">
-                  Launch dashboard
+                <Link href="/analyze">
+                  Start Free
                   <ArrowRight className="h-4 w-4" />
                 </Link>
               </Button>
               <Button asChild variant="secondary" size="lg">
-                <Link href="/analyze">Try resume analysis</Link>
+                <Link href="/dashboard">View Demo</Link>
               </Button>
-            </div>
-
-            <div className="grid gap-4 sm:grid-cols-3">
-              {[
-                ["Resume parsing", "PDF + DOCX ingestion"],
-                ["GitHub review", "Projects, commits, readmes"],
-                ["Portfolio export", "Instant personal site draft"],
-              ].map(([title, detail]) => (
-                <div
-                  key={title}
-                  className="rounded-3xl border border-white/10 bg-white/4 px-5 py-4 backdrop-blur-xl"
-                >
-                  <p className="text-sm font-medium text-slate-100">{title}</p>
-                  <p className="mt-2 text-sm text-slate-500">{detail}</p>
-                </div>
-              ))}
             </div>
           </motion.div>
 
           <motion.div
-            initial={{ opacity: 0, scale: 0.96 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.6, ease: "easeOut", delay: 0.08 }}
-            className="relative"
+            initial={{ opacity: 0, y: 24 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.45, ease: "easeOut", delay: 0.08 }}
+            className="relative rounded-[28px] border border-[rgba(250,243,224,0.10)] bg-[#292524] p-7 shadow-[0_18px_60px_rgba(0,0,0,0.22),inset_0_1px_0_rgba(255,255,255,0.03)]"
           >
-            <div className="absolute inset-x-10 top-10 h-48 rounded-full bg-cyan-400/20 blur-3xl" />
-            <div className="glass-panel relative rounded-[32px] p-6">
-              <div className="flex items-center justify-between gap-4 border-b border-white/10 pb-5">
-                <div>
-                  <p className="text-sm uppercase tracking-[0.25em] text-cyan-300">
-                    Live Product Snapshot
-                  </p>
-                  <h2 className="mt-2 text-2xl font-semibold text-slate-50">
-                    Candidate intelligence dashboard
-                  </h2>
-                </div>
-                <div className="rounded-2xl bg-[linear-gradient(135deg,#06B6D4,#22D3EE,#E5E7EB)] px-4 py-2 text-sm font-medium text-slate-950">
-                  AI Active
+            <div
+              aria-hidden="true"
+              className="pointer-events-none absolute left-1/2 top-1/2 h-[260px] w-[260px] -translate-x-1/2 -translate-y-1/2 rounded-full blur-[120px]"
+              style={{ background: "rgba(192,132,87,0.08)" }}
+            />
+            <div className="relative h-1 rounded-full bg-[linear-gradient(135deg,#8B5E3C,#C08457,#FAF3E0)]" />
+
+            <div className="relative mt-6 flex items-start justify-between">
+              <div>
+                <p className="text-sm font-medium text-[#D6D3D1]">Product Preview</p>
+                <h3 className="mt-2 text-2xl font-semibold text-white">ATS Readiness Snapshot</h3>
+              </div>
+              <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-[rgba(250,243,224,0.10)] text-[#FAF3E0]">
+                <BarChart3 className="h-5 w-5" />
+              </div>
+            </div>
+
+            <div className="relative mt-6 grid gap-4 lg:grid-cols-[0.9fr_1.1fr]">
+              <div className="flex items-center justify-center rounded-[24px] border border-[rgba(250,243,224,0.10)] bg-[#221e1d] p-5">
+                <div className="relative flex h-36 w-36 items-center justify-center rounded-full border border-[rgba(250,243,224,0.10)]">
+                  <div className="absolute inset-2 rounded-full border-[10px] border-[#3a312d]" />
+                  <div
+                    className="absolute inset-2 rounded-full border-[10px] border-transparent"
+                    style={{
+                      background:
+                        "conic-gradient(from 180deg, #8B5E3C 0deg, #C08457 230deg, #FAF3E0 309.6deg, transparent 309.6deg)",
+                      WebkitMask:
+                        "radial-gradient(farthest-side, transparent calc(100% - 10px), #000 calc(100% - 10px))",
+                    }}
+                  />
+                  <div className="text-center">
+                    <p className="text-4xl font-semibold text-white">86</p>
+                    <p className="mt-1.5 text-sm text-[#D6D3D1]">out of 100</p>
+                  </div>
                 </div>
               </div>
 
-              <div className="mt-6 grid gap-4 md:grid-cols-3">
-                {dashboardMetrics.map((item) => (
-                  <DashboardCard key={item.title} {...item} />
-                ))}
-              </div>
-
-              <div className="mt-6 grid gap-4 lg:grid-cols-[0.95fr_1.05fr]">
-                <div className="rounded-3xl border border-white/10 bg-slate-950/55 p-5">
-                  <p className="text-sm font-medium text-slate-200">Analysis pipeline</p>
-                  <div className="mt-5 space-y-4">
-                    {[
-                      "Upload resume and normalize content",
-                      "Run ATS scoring and rewrite suggestions",
-                      "Scan GitHub quality and portfolio signals",
-                      "Assemble portfolio-ready candidate story",
-                    ].map((step, index) => (
-                      <div key={step} className="flex items-center gap-3">
-                        <div className="flex h-8 w-8 items-center justify-center rounded-full border border-cyan-300/20 bg-cyan-400/8 text-xs font-semibold text-cyan-200">
-                          {index + 1}
-                        </div>
-                        <p className="text-sm text-slate-300">{step}</p>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="rounded-3xl border border-white/10 bg-slate-950/55 p-5">
-                  <div className="flex items-center justify-between">
-                    <p className="text-sm font-medium text-slate-200">Recruiter summary</p>
-                    <Sparkles className="h-4 w-4 text-cyan-300" />
-                  </div>
-                  <p className="mt-4 text-sm leading-8 text-slate-400">
-                    Strong frontend engineer profile with production React work,
-                    measurable delivery impact, and enough public proof to support
-                    a clean portfolio narrative. Recommended focus: tighten system
-                    design bullet points and raise backend keyword density.
-                  </p>
-                  <div className="mt-6 h-36 rounded-3xl border border-cyan-300/15 bg-[linear-gradient(180deg,rgba(6,182,212,0.14),rgba(255,255,255,0.02))] p-4">
-                    <div className="flex h-full items-end gap-3">
-                      {[42, 68, 56, 74, 88, 92].map((height, index) => (
-                        <div key={height} className="flex-1 space-y-2">
-                          <div
-                            className="w-full rounded-t-2xl bg-[linear-gradient(180deg,#06B6D4,#E5E7EB)]"
-                            style={{ height: `${height}%` }}
-                          />
-                          <p className="text-center text-[11px] text-slate-500">
-                            W{index + 1}
-                          </p>
-                        </div>
-                      ))}
+              <div className="space-y-3">
+                {[
+                  ["ATS Score", "86/100"],
+                  ["Keyword Match", "78%"],
+                  ["Resume Strength", "Strong"],
+                  ["Portfolio Readiness", "92%"],
+                ].map(([label, value]) => (
+                  <div
+                    key={label}
+                    className="rounded-[20px] border border-[rgba(250,243,224,0.10)] bg-[#221e1d] px-4 py-3.5"
+                  >
+                    <div className="flex items-center justify-between gap-4">
+                      <p className="text-sm font-medium text-white">{label}</p>
+                      <p className="text-sm font-medium text-[#D6AD60]">{value}</p>
                     </div>
                   </div>
-                </div>
+                ))}
               </div>
             </div>
           </motion.div>
         </div>
       </section>
 
-      <section id="features" className="px-4 py-18 sm:px-6 lg:px-8">
-        <div className="mx-auto max-w-7xl space-y-10">
-          <SectionHeading
-            eyebrow="Core Product"
-            title="Three products connected by one candidate data layer"
-            description="HireMe AI combines resume analysis, GitHub evaluation, and portfolio generation so candidates and hiring teams work from the same structured signal."
-          />
+      <section
+        id="features"
+        className="snap-start px-4 py-16 sm:px-6 lg:flex lg:min-h-screen lg:items-center lg:px-8"
+      >
+        <div className="mx-auto max-w-[1200px]">
+          <div className="max-w-2xl">
+            <p className="text-sm font-medium uppercase tracking-[0.2em] text-[#D6AD60]">
+              Features
+            </p>
+            <h2 className="mt-4 text-3xl font-semibold text-white sm:text-4xl">
+              Everything you need to get hired faster.
+            </h2>
+            <p className="mt-3 max-w-xl text-base leading-7 text-[#D6D3D1]">
+              Improve your resume, GitHub, and portfolio in one focused workspace.
+            </p>
+          </div>
 
-          <div className="grid gap-6 lg:grid-cols-3">
-            {featureCards.map((card) => (
-              <FeatureCard key={card.title} {...card} />
+          <div className="mt-10 grid gap-5 lg:grid-cols-3">
+            {features.map((feature) => (
+              <FeatureCard key={feature.title} {...feature} />
             ))}
           </div>
         </div>
       </section>
 
-      <section id="preview" className="px-4 py-18 sm:px-6 lg:px-8">
-        <div className="mx-auto max-w-7xl space-y-10">
-          <SectionHeading
-            eyebrow="Scoring Engine"
-            title="Actionable scores instead of vague AI output"
-            description="Each analysis returns structured scoring, targeted strengths, missing signals, and recruiter-facing explanations that are easy to act on."
-          />
+      <section
+        id="how-it-works"
+        className="snap-start px-4 py-16 sm:px-6 lg:flex lg:min-h-screen lg:items-center lg:px-8"
+      >
+        <div className="mx-auto max-w-[1200px]">
+          <div className="max-w-2xl">
+            <p className="text-sm font-medium uppercase tracking-[0.2em] text-[#D6AD60]">
+              Process
+            </p>
+            <h2 className="mt-4 text-3xl font-semibold text-white sm:text-4xl">
+              From resume upload to recruiter-ready profile.
+            </h2>
+          </div>
 
-          <div className="grid gap-6 lg:grid-cols-3">
-            {scoreCards.map((card) => (
-              <ScoreCard key={card.label} {...card} />
+          <div className="relative mt-10 grid gap-5 lg:grid-cols-3">
+            <div className="absolute left-0 right-0 top-6 hidden h-px bg-[#C08457] lg:block" />
+            {steps.map((step, index) => (
+              <motion.div
+                key={step.title}
+                initial={{ opacity: 0, y: 24 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, amount: 0.3 }}
+                transition={{ duration: 0.4, delay: index * 0.06 }}
+                className="relative rounded-[24px] border border-[rgba(250,243,224,0.08)] bg-[#292524] p-6 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)] lg:border-none lg:bg-transparent lg:p-0 lg:shadow-none"
+              >
+                <div className="relative z-10 flex h-12 w-12 items-center justify-center rounded-full border border-[rgba(250,243,224,0.08)] bg-[#2f2927] text-sm font-semibold text-[#FAF3E0] lg:bg-[#292524]">
+                  {index + 1}
+                </div>
+                <p className="mt-5 text-lg font-semibold text-white">{step.title}</p>
+                <p className="mt-3 max-w-sm text-base leading-7 text-[#D6D3D1]">
+                  {step.body}
+                </p>
+              </motion.div>
             ))}
           </div>
         </div>
       </section>
 
-      <section className="px-4 py-18 sm:px-6 lg:px-8">
-        <div className="mx-auto max-w-7xl">
-          <div className="grid gap-8 rounded-[32px] border border-white/10 bg-white/4 p-8 shadow-[0_28px_100px_rgba(8,15,32,0.45)] backdrop-blur-xl lg:grid-cols-[0.95fr_1.05fr] lg:items-center">
-            <div className="space-y-5">
-              <p className="text-sm uppercase tracking-[0.28em] text-cyan-300">
-                Workflow
-              </p>
-              <h2 className="text-4xl font-semibold text-slate-50">
-                One upload in, a complete candidate story out.
-              </h2>
-              <p className="text-base leading-8 text-slate-400">
-                HireMe AI is designed to move a user from raw resume to polished
-                digital presence without switching tools or losing context.
-              </p>
+      <section className="snap-start px-4 py-16 sm:px-6 lg:flex lg:min-h-screen lg:items-center lg:px-8">
+        <div className="mx-auto grid max-w-[1200px] gap-10 lg:grid-cols-2 lg:items-center">
+          <motion.div
+            initial={{ opacity: 0, y: 24 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: 0.3 }}
+            transition={{ duration: 0.45 }}
+            className="rounded-[24px] border border-[rgba(250,243,224,0.08)] bg-[#292524] p-6 shadow-[0_18px_60px_rgba(0,0,0,0.22),inset_0_1px_0_rgba(255,255,255,0.03)]"
+          >
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-[#D6D3D1]">Product Preview</p>
+                <h3 className="mt-2 text-2xl font-semibold text-white">Resume Analysis Dashboard</h3>
+              </div>
+              <ScanSearch className="h-5 w-5 text-[#D6AD60]" />
             </div>
 
-            <div className="grid gap-4">
+            <div className="mt-6 grid gap-4 sm:grid-cols-2">
               {[
-                ["01", "Resume ingestion", "Extract structured experience, keywords, bullet quality, and ATS fit."],
-                ["02", "GitHub signal mapping", "Analyze repositories, contribution patterns, stack depth, and shipping evidence."],
-                ["03", "Portfolio synthesis", "Generate a cleaner story, stronger proof points, and reusable site sections."],
-              ].map(([step, title, body]) => (
-                <div key={step} className="rounded-3xl border border-white/10 bg-slate-950/55 p-5">
-                  <div className="flex items-center gap-4">
-                    <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-cyan-400/10 text-sm font-semibold text-cyan-300">
-                      {step}
-                    </div>
-                    <div>
-                      <p className="text-lg font-semibold text-slate-100">{title}</p>
-                      <p className="mt-1 text-sm leading-7 text-slate-400">{body}</p>
-                    </div>
-                  </div>
+                ["ATS Score", "86/100"],
+                ["Keyword Match", "78%"],
+                ["Formatting Score", "Clean"],
+                ["Missing Skills", "CI/CD, Testing"],
+              ].map(([label, detail]) => (
+                <div
+                  key={label}
+                  className="rounded-[18px] border border-[rgba(250,243,224,0.08)] bg-[#221e1d] px-4 py-3.5"
+                >
+                  <p className="text-sm font-medium text-white">{label}</p>
+                  <p className="mt-1 text-sm text-[#D6AD60]">{detail}</p>
                 </div>
               ))}
             </div>
-          </div>
+
+            <div className="mt-4 rounded-[18px] border border-[rgba(250,243,224,0.08)] bg-[#221e1d] px-4 py-4">
+              <p className="text-sm font-medium text-white">AI Suggestions</p>
+              <p className="mt-2 text-sm leading-7 text-[#D6D3D1]">
+                Increase backend keyword density, add one quantified impact metric,
+                and clarify ownership on the strongest project.
+              </p>
+            </div>
+
+            <div className="mt-4 rounded-[18px] border border-[rgba(250,243,224,0.08)] bg-[#221e1d] px-4 py-4">
+              <p className="text-sm font-medium text-white">Improved Resume Bullets</p>
+              <div className="mt-3 space-y-3">
+                {[
+                  "Built a reporting dashboard that reduced manual analysis time by 42%.",
+                  "Improved page performance by 31% through bundle and render optimization.",
+                ].map((item) => (
+                  <div
+                    key={item}
+                    className="rounded-2xl border border-[rgba(250,243,224,0.08)] bg-[#292524] px-4 py-3 text-sm text-[#FAF3E0]"
+                  >
+                    {item}
+                  </div>
+                ))}
+              </div>
+            </div>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 24 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: 0.3 }}
+            transition={{ duration: 0.45, delay: 0.06 }}
+            className="space-y-4"
+          >
+            <p className="text-sm font-medium uppercase tracking-[0.2em] text-[#D6AD60]">
+              Product Showcase
+            </p>
+            <h2 className="text-3xl font-semibold text-white sm:text-4xl">
+              See what HireMe AI looks like in practice
+            </h2>
+            <p className="max-w-xl text-base leading-7 text-[#D6D3D1]">
+              The product preview is designed to feel like a real SaaS workspace:
+              structured scoring, clearer feedback, and content that is ready to
+              turn into a stronger candidate profile.
+            </p>
+            <div className="space-y-3">
+              {[
+                "Recruiter-focused resume feedback",
+                "ATS keyword optimization",
+                "Better project descriptions",
+                "Portfolio-ready content",
+              ].map((item) => (
+                <div key={item} className="flex items-start gap-3">
+                  <CheckCircle2 className="mt-1 h-5 w-5 shrink-0 text-[#D6AD60]" />
+                  <p className="text-base leading-7 text-[#D6D3D1]">{item}</p>
+                </div>
+              ))}
+            </div>
+          </motion.div>
         </div>
       </section>
 
-      <section id="pricing" className="px-4 py-18 sm:px-6 lg:px-8">
-        <div className="mx-auto max-w-7xl space-y-10">
-          <SectionHeading
-            eyebrow="Pricing"
-            title="Pricing that fits solo candidates and recruiting teams"
-            description="Start with analysis, then expand into GitHub scoring, portfolio generation, and team workflows as volume grows."
-            align="center"
-          />
+      <section
+        id="pricing"
+        className="snap-start px-4 py-16 sm:px-6 lg:flex lg:min-h-screen lg:items-center lg:px-8"
+      >
+        <div className="mx-auto max-w-[1200px]">
+          <div className="max-w-2xl">
+            <p className="text-sm font-medium uppercase tracking-[0.2em] text-[#D6AD60]">
+              Pricing
+            </p>
+            <h2 className="mt-4 text-3xl font-semibold text-white sm:text-4xl">
+              Start free, upgrade when you need more
+            </h2>
+            <p className="mt-3 max-w-xl text-base leading-7 text-[#D6D3D1]">
+              Two plans, clear value, and a stronger premium signal for candidates
+              who are actively trying to stand out.
+            </p>
+          </div>
 
-          <div className="grid gap-6 lg:grid-cols-3">
+          <div className="mt-10 grid gap-5 lg:grid-cols-2">
             <PricingCard
-              tier="Starter"
+              tier="Free"
               price="$0"
-              description="For candidates testing resume scoring and basic portfolio generation."
+              description="For trying resume analysis and understanding your baseline ATS quality."
               features={[
-                "3 resume analyses per month",
-                "Basic ATS recommendations",
-                "Single portfolio draft",
+                "Basic resume analysis",
+                "ATS score preview",
+                "Limited portfolio draft access",
               ]}
+              cta="Get Started"
             />
             <PricingCard
               tier="Pro"
               price="$29"
-              description="For active job seekers and freelance developers building a stronger technical profile."
+              description="For candidates actively improving resume quality and building a stronger portfolio."
               features={[
                 "Unlimited resume analyses",
-                "GitHub repository scoring",
-                "Advanced portfolio builder",
-                "Export-ready recruiter summaries",
+                "Full ATS recommendations",
+                "Portfolio builder",
+                "GitHub insights",
               ]}
               highlighted
-            />
-            <PricingCard
-              tier="Team"
-              price="$99"
-              description="For recruiting teams and bootcamps managing candidate quality across a pipeline."
-              features={[
-                "Multi-user workspace",
-                "Shared candidate dashboards",
-                "Priority AI processing",
-                "Usage analytics and seat controls",
-              ]}
+              badge="Popular"
+              cta="Upgrade to Pro"
             />
           </div>
         </div>
       </section>
 
-      <Footer />
+      <section className="snap-start lg:min-h-screen">
+        <div className="flex min-h-screen items-end">
+          <Footer />
+        </div>
+      </section>
     </main>
   );
 }
