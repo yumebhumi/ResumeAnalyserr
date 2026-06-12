@@ -119,9 +119,11 @@ HireMe AI helps bridge that gap using AI-powered analysis and actionable insight
 
 ## 📸 Screenshots
 
-### Landing Page
+### Landing Page 
 
-*Add screenshot here*
+
+*<img width="3408" height="1770" alt="CleanShot 2026-06-12 at 15 05 04@2x" src="https://github.com/user-attachments/assets/670a8cf1-8cd4-4854-85d7-446d18a3f379" />
+*
 
 ### Resume Analyzer
 
