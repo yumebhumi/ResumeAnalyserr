@@ -1,4 +1,4 @@
-# HireMe AI
+# HireMe AI ☕
 
 > Get Hired. Not Ghosted.
 
@@ -11,7 +11,7 @@ The app is built around a practical job-search workflow:
 - generate and save portfolio drafts
 - manage plans and upgrade through Dodo Payments
 
-## Stack
+## Tech Stack 🛠️
 
 - Next.js 16
 - TypeScript
@@ -23,18 +23,18 @@ The app is built around a practical job-search workflow:
 - Framer Motion
 - Dodo Payments
 
-## Core Features
+## Core Features ✨
 
-- Custom sign-in and sign-up pages
-- Resume upload for `PDF` and `DOCX`
-- ATS analysis with structured AI output
-- GitHub username analysis with saved results
-- Portfolio builder with live preview and draft persistence
-- Settings page with saved user preferences
-- Pricing page with Dodo checkout initiation
-- Light mode and Dark Coffee mode support
+- Custom sign-in and sign-up pages 🔐
+- Resume upload for `PDF` and `DOCX` 📄
+- ATS analysis with structured AI output 🤖
+- GitHub username analysis with saved results 🐙
+- Portfolio builder with live preview and draft persistence 🎨
+- Settings page with saved user preferences ⚙️
+- Pricing page with Dodo checkout initiation 💳
+- Light mode and Dark Coffee mode support 🌗
 
-## App Routes
+## App Routes 🧭
 
 - `/` landing page
 - `/sign-in`
@@ -47,7 +47,7 @@ The app is built around a practical job-search workflow:
 - `/settings`
 - `/user-profile`
 
-## API Routes
+## API Routes 🔌
 
 - `POST /api/analyze-resume`
 - `POST /api/generate-suggestions`
@@ -58,7 +58,7 @@ The app is built around a practical job-search workflow:
 - `GET /api/settings`
 - `POST /api/settings`
 
-## Environment Variables
+## Environment Variables 🔐
 
 Create a `.env.local` file in the project root.
 
@@ -82,7 +82,7 @@ Notes:
 - `GITHUB_TOKEN` is optional but recommended for GitHub API reliability.
 - `DODO_PAYMENTS_ENVIRONMENT` is normalized in code and can be `test` during local work.
 
-## Local Setup
+## Local Setup 🚀
 
 Install dependencies:
 
@@ -102,7 +102,7 @@ Open:
 http://localhost:3000
 ```
 
-## Database Setup
+## Database Setup 🗄️
 
 Generate Drizzle artifacts:
 
@@ -122,7 +122,7 @@ Open Drizzle Studio:
 npm run db:studio
 ```
 
-## Resume Analysis Flow
+## Resume Analysis Flow 📄
 
 `/api/analyze-resume` performs:
 
@@ -147,7 +147,7 @@ The analysis response includes:
 - improved bullets
 - summary
 
-## GitHub Analysis Flow
+## GitHub Analysis Flow 🐙
 
 `/api/analyze-github` performs:
 
@@ -165,7 +165,7 @@ Returned data includes:
 - portfolio-ready score
 - focused recommendations
 
-## Portfolio Generation Flow
+## Portfolio Generation Flow 🎨
 
 `/api/generate-portfolio` performs:
 
@@ -175,7 +175,7 @@ Returned data includes:
 4. save draft to `portfolio_drafts`
 5. return generated content for preview
 
-## Billing
+## Billing 💳
 
 Pricing uses Dodo Payments.
 
@@ -197,7 +197,7 @@ https://<public-url>/api/webhooks/dodo
 
 5. complete a test payment and verify `users.plan` updates
 
-## Scripts
+## Scripts 📜
 
 ```bash
 npm run dev
@@ -209,7 +209,7 @@ npm run db:push
 npm run db:studio
 ```
 
-## Validation
+## Validation ✅
 
 Before pushing changes:
 
@@ -218,7 +218,7 @@ npm run lint
 npm run build
 ```
 
-## Current Status
+## Current Status 📌
 
 Implemented:
 - auth
