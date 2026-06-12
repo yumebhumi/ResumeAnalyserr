@@ -1,198 +1,88 @@
-# ☕ HireMe AI
+# HireMe AI
 
-> ### Get Hired. Not Ghosted.
+> Get Hired. Not Ghosted.
 
-HireMe AI is an AI-powered career workspace that helps developers, students, and job seekers optimize their resumes, improve ATS scores, analyze GitHub profiles, and generate recruiter-ready portfolios—all from a single platform.
+HireMe AI is an AI-powered career workspace for resume analysis, GitHub profile review, and recruiter-ready portfolio generation.
 
-Built with modern web technologies and powered by Gemini AI, HireMe AI transforms job applications into a structured, data-driven process.
+The app is built around a practical job-search workflow:
+- upload a resume
+- analyze ATS readiness with Gemini
+- review GitHub quality and portfolio readiness
+- generate and save portfolio drafts
+- manage plans and upgrade through Dodo Payments
 
----
+## Stack
 
-## 🚀 Features
+- Next.js 16
+- TypeScript
+- Tailwind CSS v4
+- Clerk authentication
+- Neon Postgres
+- Drizzle ORM
+- Gemini API
+- Framer Motion
+- Dodo Payments
 
-### 📄 Resume Analyzer
+## Core Features
 
-Upload your resume and receive:
+- Custom sign-in and sign-up pages
+- Resume upload for `PDF` and `DOCX`
+- ATS analysis with structured AI output
+- GitHub username analysis with saved results
+- Portfolio builder with live preview and draft persistence
+- Settings page with saved user preferences
+- Pricing page with Dodo checkout initiation
+- Light mode and Dark Coffee mode support
 
-* ATS Score Analysis
-* Keyword Match Detection
-* Skills Evaluation
-* Experience Assessment
-* Project Quality Review
-* Missing Skills Identification
-* AI-Powered Resume Suggestions
-* Improved Resume Bullet Points
+## App Routes
 
----
+- `/` landing page
+- `/sign-in`
+- `/sign-up`
+- `/dashboard`
+- `/analyze`
+- `/github`
+- `/portfolio`
+- `/pricing`
+- `/settings`
+- `/user-profile`
 
-### 🐙 GitHub Analyzer
+## API Routes
 
-Analyze your GitHub profile and discover:
+- `POST /api/analyze-resume`
+- `POST /api/generate-suggestions`
+- `POST /api/analyze-github`
+- `POST /api/generate-portfolio`
+- `POST /api/billing/checkout`
+- `POST /api/webhooks/dodo`
+- `GET /api/settings`
+- `POST /api/settings`
 
-* Repository Overview
-* Language Distribution
-* Project Quality Insights
-* Portfolio Readiness Score
-* Open Source Activity Analysis
-* Recruiter-Friendly Recommendations
-* Top Project Highlighting
+## Environment Variables
 
----
-
-### 🎨 Portfolio Builder
-
-Generate a professional developer portfolio instantly.
-
-Features include:
-
-* Resume-to-Portfolio Conversion
-* Live Portfolio Preview
-* Multiple Portfolio Templates
-* GitHub & LinkedIn Integration
-* Portfolio Publishing
-* Export Ready Code
-* Premium Portfolio Themes
-
----
-
-### 🤖 AI Career Intelligence
-
-Powered by Gemini AI.
-
-Get:
-
-* Resume Optimization Suggestions
-* Recruiter-Oriented Feedback
-* Skill Gap Analysis
-* Project Improvement Recommendations
-* Career Positioning Insights
-
----
-
-## ✨ Why HireMe AI?
-
-Most candidates:
-
-* Apply with weak resumes
-* Ignore ATS optimization
-* Have incomplete GitHub profiles
-* Lack professional portfolios
-
-HireMe AI helps bridge that gap using AI-powered analysis and actionable insights.
-
----
-
-## 🛠 Tech Stack
-
-### Frontend
-
-* Next.js 15
-* React 19
-* TypeScript
-* Tailwind CSS
-* Framer Motion
-* Shadcn UI
-
-### Backend
-
-* Next.js API Routes
-* Drizzle ORM
-* Neon PostgreSQL
-
-### Authentication
-
-* Clerk Authentication
-
-### AI
-
-* Google Gemini API
-
-### Payments
-
-* Dodo Payments
-
-### Deployment
-
-* Vercel
-
----
-
-## 📸 Screenshots
-
-### Landing Page 
-
-
-*<img width="3408" height="1770" alt="CleanShot 2026-06-12 at 15 05 04@2x" src="https://github.com/user-attachments/assets/670a8cf1-8cd4-4854-85d7-446d18a3f379" />
-*
-
-### Resume Analyzer
-
-*Add screenshot here*
-
-### GitHub Analyzer
-
-*Add screenshot here*
-
-### Portfolio Builder
-
-*Add screenshot here*
-
----
-
-## 🏗 Project Structure
-
-```bash
-app/
-├── dashboard/
-├── analyze/
-├── github/
-├── portfolio/
-├── pricing/
-├── settings/
-
-components/
-lib/
-db/
-actions/
-api/
-```
-
----
-
-## ⚙️ Environment Variables
-
-Create a `.env.local` file:
+Create a `.env.local` file in the project root.
 
 ```env
-DATABASE_URL=
+NEXT_PUBLIC_APP_URL=http://localhost:3000
 
 NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=
 CLERK_SECRET_KEY=
 
+DATABASE_URL=
 GEMINI_API_KEY=
+GITHUB_TOKEN=
 
 DODO_PAYMENTS_API_KEY=
-DODO_PAYMENTS_ENVIRONMENT=
+DODO_PAYMENTS_ENVIRONMENT=test
 DODO_PAYMENTS_WEBHOOK_KEY=
-
-NEXT_PUBLIC_APP_URL=
+DODO_PRO_PRODUCT_ID=
 ```
 
----
+Notes:
+- `GITHUB_TOKEN` is optional but recommended for GitHub API reliability.
+- `DODO_PAYMENTS_ENVIRONMENT` is normalized in code and can be `test` during local work.
 
-## 🚀 Getting Started
-
-Clone the repository:
-
-```bash
-git clone https://github.com/yumebhumi/ResumeAnalyserr.git
-```
-
-Move into the project:
-
-```bash
-cd ResumeAnalyserr
-```
+## Local Setup
 
 Install dependencies:
 
@@ -200,7 +90,7 @@ Install dependencies:
 npm install
 ```
 
-Run the development server:
+Run the app:
 
 ```bash
 npm run dev
@@ -208,84 +98,137 @@ npm run dev
 
 Open:
 
-```bash
+```txt
 http://localhost:3000
 ```
 
----
+## Database Setup
 
-## 🔒 Authentication
+Generate Drizzle artifacts:
 
-HireMe AI uses Clerk for:
+```bash
+npm run db:generate
+```
 
-* Secure Authentication
-* OAuth Providers
-* Session Management
-* Protected Routes
-* User Profiles
+Push schema changes to Neon:
 
----
+```bash
+npm run db:push
+```
 
-## 💳 Pricing
+Open Drizzle Studio:
 
-### Free Plan
+```bash
+npm run db:studio
+```
 
-* 1 Resume Analysis
-* Basic ATS Score
-* Basic Portfolio Template
-* GitHub Overview
+## Resume Analysis Flow
 
-### Pro Plan
+`/api/analyze-resume` performs:
 
-* Unlimited Resume Analysis
-* Premium Templates
-* Recruiter Insights
-* Advanced GitHub Analysis
-* AI Optimization Credits
-* Portfolio Export
-* Custom Domains
+1. Clerk auth check
+2. file validation
+3. PDF or DOCX text extraction
+4. Gemini ATS analysis
+5. database persistence
+6. response back to the frontend
 
----
+The analysis response includes:
+- ATS score
+- keyword match
+- formatting score
+- skills score
+- projects score
+- experience score
+- missing skills
+- strengths
+- weaknesses
+- suggestions
+- improved bullets
+- summary
 
-## 🛣 Roadmap
+## GitHub Analysis Flow
 
-### Coming Soon
+`/api/analyze-github` performs:
 
-* AI Mock Interviews
-* Cover Letter Generator
-* LinkedIn Analyzer
-* Job Tracker
-* Resume Version History
-* AI Career Coach
-* Application Tracking Dashboard
-* Recruiter Matching
+1. Clerk auth check
+2. GitHub username validation
+3. public GitHub API fetch
+4. Gemini developer-profile analysis
+5. database persistence
 
----
+Returned data includes:
+- repo count
+- stars
+- top languages
+- best projects
+- portfolio-ready score
+- focused recommendations
 
-## 👩‍💻 Author
+## Portfolio Generation Flow
 
-**Bhumika Choudhary**
+`/api/generate-portfolio` performs:
 
-GitHub: https://github.com/yumebhumi
+1. Clerk auth check
+2. load latest or selected resume analysis
+3. generate structured portfolio content with Gemini
+4. save draft to `portfolio_drafts`
+5. return generated content for preview
 
-X (Twitter): https://x.com/coldcoffeecoder
+## Billing
 
----
+Pricing uses Dodo Payments.
 
-## ⭐ Support
+Current backend pieces:
+- checkout session creation
+- webhook endpoint
+- plan update flow
 
-If you like this project, consider giving it a star on GitHub.
+To complete billing locally:
 
-It helps more developers discover HireMe AI.
+1. create the Pro product in Dodo
+2. set `DODO_PRO_PRODUCT_ID`
+3. expose localhost with `ngrok` or equivalent
+4. configure Dodo webhook to:
 
----
+```txt
+https://<public-url>/api/webhooks/dodo
+```
 
-## ☕ Final Thought
+5. complete a test payment and verify `users.plan` updates
 
-Your resume gets you noticed.
+## Scripts
 
-Your portfolio proves your skills.
+```bash
+npm run dev
+npm run build
+npm run start
+npm run lint
+npm run db:generate
+npm run db:push
+npm run db:studio
+```
 
-Your GitHub builds credibility.
+## Validation
 
-**HireMe AI helps you improve all three.**
+Before pushing changes:
+
+```bash
+npm run lint
+npm run build
+```
+
+## Current Status
+
+Implemented:
+- auth
+- resume analysis backend
+- GitHub analysis backend
+- portfolio draft generation
+- settings persistence
+- pricing UI and Dodo checkout initiation
+
+Still operationally dependent on external setup:
+- live Dodo webhook verification
+- full Free vs Pro backend enforcement
+- production deployment configuration
