@@ -1,0 +1,27 @@
+<svg width="256" height="256" viewBox="0 0 256 256" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="steamLight" x1="120" y1="30" x2="160" y2="92" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#D6AD60"/>
+      <stop offset="1" stop-color="#C08457"/>
+    </linearGradient>
+    <linearGradient id="bagLight" x1="70" y1="88" x2="188" y2="176" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#D5924F"/>
+      <stop offset="1" stop-color="#B96C2E"/>
+    </linearGradient>
+    <linearGradient id="cupLight" x1="56" y1="160" x2="214" y2="214" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#E8C89D"/>
+      <stop offset="1" stop-color="#FAF3E0"/>
+    </linearGradient>
+    <linearGradient id="waveLight" x1="88" y1="180" x2="164" y2="180" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#D5924F"/>
+      <stop offset="1" stop-color="#B96C2E"/>
+    </linearGradient>
+  </defs>
+  <path d="M118 34C106 50 106 70 118 86C130 71 129 50 118 34Z" fill="url(#steamLight)"/>
+  <path d="M148 44C138 57 138 74 148 88C159 75 160 57 148 44Z" fill="url(#steamLight)"/>
+  <path d="M98 102H158C166 102 172 108 172 116V128H84V116C84 108 90 102 98 102Z" stroke="#C08457" stroke-width="7" stroke-linejoin="round"/>
+  <path d="M72 128H184C193 128 200 136 200 145V168L168 190H88L56 168V145C56 136 63 128 72 128Z" fill="url(#bagLight)"/>
+  <path d="M123 169H133C138 169 142 173 142 178V191H114V178C114 173 118 169 123 169Z" fill="#E8C89D" stroke="#FAF3E0" stroke-width="3"/>
+  <path d="M58 170V186C58 210 77 229 101 229H171C185 229 197 218 197 204C197 190 185 179 171 179H165" stroke="url(#cupLight)" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M85 184C104 194 126 194 160 184" stroke="url(#waveLight)" stroke-width="10" stroke-linecap="round"/>
+</svg>

@@ -7,6 +7,7 @@ import { resumeAnalyses, users } from "@/db/schema";
 import { generateResumeSuggestions } from "@/features/resume/suggestions";
 import { resumeAnalysisSchema } from "@/features/resume/schema";
 import { getDb } from "@/lib/db";
+import { ensureAppSchema } from "@/lib/db-schema";
 
 const requestSchema = z
   .object({
@@ -27,6 +28,7 @@ export async function POST(request: Request) {
   try {
     const body = requestSchema.parse(await request.json());
     const db = getDb();
+    await ensureAppSchema();
 
     let resumeText = body.resumeText;
     let priorAnalysis = null;

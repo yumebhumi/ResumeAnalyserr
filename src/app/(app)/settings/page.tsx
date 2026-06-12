@@ -4,14 +4,14 @@ import { desc, eq } from "drizzle-orm";
 import { githubProfiles, resumeAnalyses, usageEvents, users } from "@/db/schema";
 import { SettingsForm } from "@/features/settings/form";
 import { getDb } from "@/lib/db";
-import { ensureUsersTableColumns } from "@/lib/db-schema";
+import { ensureAppSchema } from "@/lib/db-schema";
 
 export default async function SettingsPage() {
   const { userId: clerkUserId } = await auth();
   const clerkProfile = await currentUser();
   const db = getDb();
 
-  await ensureUsersTableColumns();
+  await ensureAppSchema();
 
   const [user] = clerkUserId
     ? await db

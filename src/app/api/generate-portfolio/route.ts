@@ -8,6 +8,7 @@ import { generatePortfolioContent } from "@/features/portfolio/generate";
 import { savePortfolioDraft } from "@/features/portfolio/persist";
 import { generatedPortfolioSchema } from "@/features/portfolio/schema";
 import { getDb } from "@/lib/db";
+import { ensureAppSchema } from "@/lib/db-schema";
 
 const sectionsSchema = z.object({
   name: z.string().default(""),
@@ -39,6 +40,7 @@ export async function POST(request: Request) {
   try {
     const body = requestSchema.parse(await request.json());
     const db = getDb();
+    await ensureAppSchema();
     const [user] = await db
       .select({ id: users.id })
       .from(users)

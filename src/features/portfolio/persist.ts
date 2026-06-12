@@ -1,10 +1,11 @@
 import { randomUUID } from "node:crypto";
 
 import { currentUser } from "@clerk/nextjs/server";
-import { and, eq, sql } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 
 import { portfolioDrafts, users } from "@/db/schema";
 import { getDb } from "@/lib/db";
+import { ensureAppSchema } from "@/lib/db-schema";
 
 import type { PortfolioFormData, PortfolioTemplate } from "./types";
 
@@ -15,7 +16,7 @@ export async function savePortfolioDraft(params: {
   sections: PortfolioFormData;
 }) {
   const db = getDb();
-  await ensurePortfolioDraftsTable();
+  await ensureAppSchema();
   const user = await ensureUserRecord(params.clerkUserId);
 
   const nextSections = {
@@ -96,33 +97,4 @@ async function ensureUserRecord(clerkUserId: string) {
     .returning();
 
   return createdUser;
-}
-
-async function ensurePortfolioDraftsTable() {
-  const db = getDb();
-
-  await db.execute(sql`
-    CREATE TABLE IF NOT EXISTS portfolio_drafts (
-      id uuid PRIMARY KEY,
-      user_id uuid NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-      analysis_id uuid NULL,
-      github_profile_id uuid NULL,
-      template varchar(64) NOT NULL DEFAULT 'minimal',
-      sections jsonb,
-      portfolio_json jsonb,
-      html_snapshot text,
-      created_at timestamptz NOT NULL DEFAULT now(),
-      updated_at timestamptz NOT NULL DEFAULT now()
-    )
-  `);
-
-  await db.execute(sql`
-    ALTER TABLE portfolio_drafts
-    ADD COLUMN IF NOT EXISTS portfolio_json jsonb
-  `);
-
-  await db.execute(sql`
-    ALTER TABLE portfolio_drafts
-    ADD COLUMN IF NOT EXISTS created_at timestamptz NOT NULL DEFAULT now()
-  `);
 }

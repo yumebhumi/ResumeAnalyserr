@@ -5,6 +5,10 @@ import { githubProfiles, portfolioDrafts, resumeAnalyses, users } from "@/db/sch
 import { buildPortfolioInitialData } from "@/features/portfolio/defaults";
 import { PortfolioBuilder } from "@/features/portfolio/builder";
 import { getDb } from "@/lib/db";
+import { ensureAppSchema } from "@/lib/db-schema";
+
+const uuidPattern =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
 export default async function PortfolioDraftPage({
   params,
@@ -12,8 +16,12 @@ export default async function PortfolioDraftPage({
   params: Promise<{ draftId: string }>;
 }) {
   const { draftId } = await params;
+  const isDemoDraft = draftId === "demo";
+  const isUuidDraft = uuidPattern.test(draftId);
   const { userId: clerkUserId } = await auth();
   const db = getDb();
+
+  await ensureAppSchema();
 
   const [user] = clerkUserId
     ? await db
@@ -23,8 +31,16 @@ export default async function PortfolioDraftPage({
         .limit(1)
     : [];
 
-  const [draftById] = user
-    ? await db
+  let draftById:
+    | {
+        id: string;
+        template: string;
+        sections: Record<string, unknown> | null;
+      }
+    | null = null;
+
+  if (user && isUuidDraft) {
+    [draftById] = await db
         .select({
           id: portfolioDrafts.id,
           template: portfolioDrafts.template,
@@ -37,11 +53,19 @@ export default async function PortfolioDraftPage({
             eq(portfolioDrafts.id, draftId),
           ),
         )
-        .limit(1)
-    : [];
+        .limit(1);
+  }
 
-  const [latestDraft] = !draftById && user
-    ? await db
+  let latestDraft:
+    | {
+        id: string;
+        template: string;
+        sections: Record<string, unknown> | null;
+      }
+    | null = null;
+
+  if (!draftById && user) {
+    [latestDraft] = await db
         .select({
           id: portfolioDrafts.id,
           template: portfolioDrafts.template,
@@ -50,8 +74,8 @@ export default async function PortfolioDraftPage({
         .from(portfolioDrafts)
         .where(eq(portfolioDrafts.userId, user.id))
         .orderBy(desc(portfolioDrafts.updatedAt))
-        .limit(1)
-    : [];
+        .limit(1);
+  }
 
   const [latestAnalysis] = user
     ? await db
@@ -77,7 +101,7 @@ export default async function PortfolioDraftPage({
         .limit(1)
     : [];
 
-  const selectedDraft = draftById ?? (draftId === "demo" ? latestDraft ?? null : null);
+  const selectedDraft = draftById ?? (isDemoDraft ? latestDraft ?? null : null);
 
   const initialData = buildPortfolioInitialData({
     latestAnalysis: latestAnalysis

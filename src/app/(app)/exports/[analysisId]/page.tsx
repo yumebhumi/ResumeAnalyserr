@@ -5,6 +5,7 @@ import { Download, FileText, Target } from "lucide-react";
 import { SectionCard } from "@/components/section-card";
 import { resumeAnalyses, users } from "@/db/schema";
 import { getDb } from "@/lib/db";
+import { ensureAppSchema } from "@/lib/db-schema";
 
 export default async function ExportsPage({
   params,
@@ -14,6 +15,8 @@ export default async function ExportsPage({
   const { analysisId } = await params;
   const { userId: clerkUserId } = await auth();
   const db = getDb();
+
+  await ensureAppSchema();
 
   const [user] = clerkUserId
     ? await db

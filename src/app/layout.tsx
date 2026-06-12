@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { ClerkProvider } from "@clerk/nextjs";
 
+import { ThemeProvider } from "@/components/theme-provider";
 import { clerkAppearance } from "@/lib/clerk-appearance";
 import { clerkLocalization } from "@/lib/clerk-localization";
 
@@ -18,20 +19,22 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body className="min-h-screen bg-background text-foreground antialiased">
-        <ClerkProvider
-          appearance={clerkAppearance}
-          localization={clerkLocalization}
-          signInForceRedirectUrl="/dashboard"
-          signInUrl="/sign-in"
-          signInFallbackRedirectUrl="/dashboard"
-          signUpForceRedirectUrl="/dashboard"
-          signUpUrl="/sign-up"
-          signUpFallbackRedirectUrl="/dashboard"
-        >
-          {children}
-        </ClerkProvider>
+        <ThemeProvider>
+          <ClerkProvider
+            appearance={clerkAppearance}
+            localization={clerkLocalization}
+            signInForceRedirectUrl="/dashboard"
+            signInUrl="/sign-in"
+            signInFallbackRedirectUrl="/dashboard"
+            signUpForceRedirectUrl="/dashboard"
+            signUpUrl="/sign-up"
+            signUpFallbackRedirectUrl="/dashboard"
+          >
+            {children}
+          </ClerkProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

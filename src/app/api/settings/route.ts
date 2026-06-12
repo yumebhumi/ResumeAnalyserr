@@ -1,9 +1,9 @@
 import { auth, currentUser } from "@clerk/nextjs/server";
-import { eq } from "drizzle-orm";
+import { desc, eq } from "drizzle-orm";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
-import { users } from "@/db/schema";
+import { resumeAnalyses, users } from "@/db/schema";
 import { getDb } from "@/lib/db";
 import { ensureUsersTableColumns } from "@/lib/db-schema";
 
@@ -14,6 +14,55 @@ const settingsSchema = z.object({
   linkedinUrl: z.string().trim().max(512).default(""),
   portfolioUrl: z.string().trim().max(512).default(""),
 });
+
+export async function GET() {
+  const { userId: clerkUserId } = await auth();
+
+  if (!clerkUserId) {
+    return NextResponse.json({ error: "Unauthorized." }, { status: 401 });
+  }
+
+  const db = getDb();
+
+  await ensureUsersTableColumns();
+
+  const [user] = await db
+    .select({
+      id: users.id,
+      plan: users.plan,
+      targetRole: users.targetRole,
+      preferredLocation: users.preferredLocation,
+      experienceLevel: users.experienceLevel,
+      linkedinUrl: users.linkedinUrl,
+      portfolioUrl: users.portfolioUrl,
+      email: users.email,
+    })
+    .from(users)
+    .where(eq(users.clerkUserId, clerkUserId))
+    .limit(1);
+
+  const latestAnalysis =
+    user?.id
+      ? await db
+          .select({ atsScore: resumeAnalyses.atsScore })
+          .from(resumeAnalyses)
+          .where(eq(resumeAnalyses.userId, user.id))
+          .orderBy(desc(resumeAnalyses.createdAt))
+          .limit(1)
+          .then((rows) => rows[0] ?? null)
+      : null;
+
+  return NextResponse.json({
+    plan: user?.plan === "pro" ? "pro" : "free",
+    targetRole: user?.targetRole ?? "",
+    preferredLocation: user?.preferredLocation ?? "",
+    experienceLevel: user?.experienceLevel ?? "Student",
+    linkedinUrl: user?.linkedinUrl ?? "",
+    portfolioUrl: user?.portfolioUrl ?? "",
+    email: user?.email ?? "",
+    atsScore: latestAnalysis?.atsScore ?? null,
+  });
+}
 
 export async function POST(request: Request) {
   const { userId: clerkUserId } = await auth();

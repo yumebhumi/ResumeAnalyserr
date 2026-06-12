@@ -4,10 +4,13 @@ import { redirect } from "next/navigation";
 
 import { portfolioDrafts, users } from "@/db/schema";
 import { getDb } from "@/lib/db";
+import { ensureAppSchema } from "@/lib/db-schema";
 
 export default async function PortfolioIndexPage() {
   const { userId: clerkUserId } = await auth();
   const db = getDb();
+
+  await ensureAppSchema();
 
   if (!clerkUserId) {
     redirect("/sign-in");

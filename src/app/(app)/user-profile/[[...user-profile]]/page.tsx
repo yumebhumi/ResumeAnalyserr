@@ -3,17 +3,17 @@ import { UserProfile } from "@clerk/nextjs";
 export default function UserProfilePage() {
   return (
     <div className="mx-auto max-w-[980px] pb-8">
-      <div className="overflow-hidden rounded-[24px] border border-[rgba(250,243,224,0.08)] bg-[#292524] p-4 shadow-[0_16px_40px_rgba(0,0,0,0.18)]">
+      <div className="overflow-hidden rounded-[24px] border border-[var(--border)] bg-card p-4 shadow-[var(--card-shadow)]">
         <UserProfile
           routing="path"
           path="/user-profile"
           appearance={{
             variables: {
-              colorPrimary: "#C08457",
-              colorBackground: "#292524",
-              colorText: "#FFFFFF",
-              colorInputBackground: "#1C1917",
-              colorInputText: "#FFFFFF",
+              colorPrimary: "var(--primary)",
+              colorBackground: "var(--surface)",
+              colorText: "var(--text-primary)",
+              colorInputBackground: "var(--background)",
+              colorInputText: "var(--text-primary)",
               borderRadius: "16px",
             },
           }}

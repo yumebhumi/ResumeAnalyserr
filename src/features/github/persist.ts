@@ -1,9 +1,10 @@
 import { currentUser } from "@clerk/nextjs/server";
-import { eq, sql } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 import { randomUUID } from "node:crypto";
 
 import { githubAnalyses, githubProfiles, users } from "@/db/schema";
 import { getDb } from "@/lib/db";
+import { ensureAppSchema } from "@/lib/db-schema";
 
 import type { GithubAnalysis } from "./schema";
 
@@ -14,7 +15,7 @@ export async function saveGithubAnalysis(params: {
   analysis: GithubAnalysis;
 }) {
   const db = getDb();
-  await ensureGithubProfilesTable();
+  await ensureAppSchema();
 
   const [existingUser] = await db
     .select()
@@ -56,9 +57,6 @@ export async function saveGithubAnalysis(params: {
     .returning({
       id: githubProfiles.id,
     });
-
-  await ensureGithubAnalysesTable();
-
   await db.insert(githubAnalyses).values({
     userId: user.id,
     username: params.username,
@@ -67,34 +65,4 @@ export async function saveGithubAnalysis(params: {
   });
 
   return profile.id;
-}
-
-async function ensureGithubProfilesTable() {
-  const db = getDb();
-
-  await db.execute(sql`
-    CREATE TABLE IF NOT EXISTS github_profiles (
-      id uuid PRIMARY KEY,
-      user_id uuid NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-      username varchar(255) NOT NULL,
-      summary jsonb,
-      stats jsonb,
-      analyzed_at timestamptz NOT NULL DEFAULT now()
-    )
-  `);
-}
-
-async function ensureGithubAnalysesTable() {
-  const db = getDb();
-
-  await db.execute(sql`
-    CREATE TABLE IF NOT EXISTS github_analyses (
-      id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-      user_id uuid NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-      username varchar(255) NOT NULL,
-      analysis_json jsonb NOT NULL,
-      portfolio_ready_score integer NOT NULL,
-      created_at timestamptz NOT NULL DEFAULT now()
-    )
-  `);
 }

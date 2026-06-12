@@ -15,7 +15,26 @@ import {
 } from "lucide-react";
 import { UserButton } from "@clerk/nextjs";
 
+import { BrandLogo } from "@/components/brand-logo";
+import { ThemeToggle } from "@/components/theme-toggle";
 import { cn } from "@/lib/utils";
+
+const userButtonAppearance = {
+  elements: {
+    avatarBox: "h-10 w-10",
+    userButtonPopoverCard:
+      "border border-[var(--border)] bg-[var(--auth-card)] shadow-[0_20px_60px_rgba(0,0,0,0.12)]",
+    userButtonPopoverMain: "bg-[var(--auth-card)] text-[var(--auth-text)]",
+    userButtonPopoverFooter: "bg-[var(--auth-card)] border-t border-[var(--border)]",
+    userPreview: "bg-transparent",
+    userPreviewMainIdentifier: "text-[var(--auth-text)] font-semibold",
+    userPreviewSecondaryIdentifier: "text-[var(--auth-muted)]",
+    userButtonPopoverActionButton:
+      "text-[var(--auth-text)] hover:bg-[var(--surface-soft)] rounded-[14px]",
+    userButtonPopoverActionButtonText: "text-[var(--auth-text)]",
+    userButtonPopoverActionButtonIcon: "text-[var(--auth-muted)]",
+  },
+} as const;
 
 const navigation = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
@@ -89,11 +108,11 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             className={cn(
               "flex items-center gap-3 rounded-2xl px-4 py-3 text-sm transition",
               isActive
-                ? "bg-[rgba(192,132,87,0.14)] text-[#FAF3E0]"
-                : "text-[#D6D3D1] hover:bg-white/5 hover:text-white",
+                ? "bg-[var(--brand-soft)] text-[var(--accent)]"
+                : "text-[var(--text-secondary)] hover:bg-[var(--brand-soft)] hover:text-[var(--text-primary)]",
             )}
           >
-            <Icon className="h-4 w-4 text-[#C08457]" />
+            <Icon className="h-4 w-4 text-[var(--primary)]" />
             <span>{label}</span>
           </Link>
         );
@@ -102,7 +121,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   );
 
   return (
-    <div className="min-h-screen bg-[#1C1917] text-white">
+    <div className="min-h-screen bg-background text-[var(--text-primary)]">
       {isSidebarOpen ? (
         <button
           type="button"
@@ -113,15 +132,14 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       ) : null}
 
       <div className="mx-auto flex min-h-screen max-w-[1440px]">
-        <aside className="hidden w-[248px] shrink-0 flex-col border-r border-[rgba(250,243,224,0.08)] bg-[#292524] px-4 py-5 md:flex">
-          <div className="flex items-center gap-3 border-b border-[rgba(250,243,224,0.08)] pb-5">
-            <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[#1f1b1a] text-sm font-semibold text-[#FAF3E0]">
-              HM
-            </div>
-            <div>
-              <h1 className="text-lg font-semibold text-white">HireMe AI</h1>
-              <p className="text-sm text-[#D6D3D1]">Career workspace</p>
-            </div>
+        <aside className="hidden w-[248px] shrink-0 flex-col border-r border-[var(--border)] bg-surface px-4 py-5 md:flex">
+          <div className="border-b border-[var(--border)] pb-5">
+            <Link href="/" className="flex items-center gap-3">
+              <BrandLogo
+                iconClassName="h-11 w-11 rounded-2xl border border-[var(--border)]"
+                textClassName="text-lg"
+              />
+            </Link>
           </div>
 
           <div className="mt-6">{navItems}</div>
@@ -129,24 +147,21 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
         <aside
           className={cn(
-            "fixed inset-y-0 left-0 z-40 w-[248px] border-r border-[rgba(250,243,224,0.08)] bg-[#292524] px-4 py-5 transition-transform md:hidden",
+            "fixed inset-y-0 left-0 z-40 w-[248px] border-r border-[var(--border)] bg-surface px-4 py-5 transition-transform md:hidden",
             isSidebarOpen ? "translate-x-0" : "-translate-x-full",
           )}
         >
-          <div className="flex items-center justify-between border-b border-[rgba(250,243,224,0.08)] pb-5">
-            <div className="flex items-center gap-3">
-              <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[#1f1b1a] text-sm font-semibold text-[#FAF3E0]">
-                HM
-              </div>
-              <div>
-                <h1 className="text-lg font-semibold text-white">HireMe AI</h1>
-                <p className="text-sm text-[#D6D3D1]">Career workspace</p>
-              </div>
-            </div>
+          <div className="flex items-center justify-between border-b border-[var(--border)] pb-5">
+            <Link href="/" className="flex items-center gap-3" onClick={() => setIsSidebarOpen(false)}>
+              <BrandLogo
+                iconClassName="h-11 w-11 rounded-2xl border border-[var(--border)]"
+                textClassName="text-lg"
+              />
+            </Link>
             <button
               type="button"
               aria-label="Close sidebar"
-              className="flex h-10 w-10 items-center justify-center rounded-2xl border border-[rgba(250,243,224,0.08)] bg-[#1f1b1a] text-[#D6AD60]"
+              className="flex h-10 w-10 items-center justify-center rounded-2xl border border-[var(--border)] bg-[var(--surface-contrast)] text-[var(--secondary)]"
               onClick={() => setIsSidebarOpen(false)}
             >
               <X className="h-4 w-4" />
@@ -157,34 +172,29 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         </aside>
 
         <div className="flex min-h-screen flex-1 flex-col">
-          <header className="sticky top-0 z-10 border-b border-[rgba(250,243,224,0.08)] bg-[#1C1917]/95 px-4 py-4 backdrop-blur sm:px-6 lg:px-8">
+          <header className="sticky top-0 z-10 border-b border-[var(--border)] bg-[color:var(--background)]/95 px-4 py-4 backdrop-blur sm:px-6 lg:px-8">
             <div className="flex items-center justify-between gap-4">
               <div className="flex items-center gap-3">
                 <button
                   type="button"
                   aria-label="Open sidebar"
                   onClick={() => setIsSidebarOpen(true)}
-                  className="flex h-10 w-10 items-center justify-center rounded-2xl border border-[rgba(250,243,224,0.08)] bg-[#292524] text-[#C08457] md:hidden"
+                  className="flex h-10 w-10 items-center justify-center rounded-2xl border border-[var(--border)] bg-card text-[var(--primary)] md:hidden"
                 >
                   <PanelLeft className="h-4 w-4" />
                 </button>
                 <div>
-                  <p className="text-lg font-semibold text-white">{activeHeader.title}</p>
-                  <p className="text-sm text-[#D6D3D1]">{activeHeader.subtitle}</p>
+                  <p className="text-lg font-semibold text-[var(--text-primary)]">{activeHeader.title}</p>
+                  <p className="text-sm text-[var(--text-secondary)]">{activeHeader.subtitle}</p>
                 </div>
               </div>
 
               <div className="flex items-center gap-3">
-                <div className="hidden rounded-full border border-[rgba(250,243,224,0.08)] bg-[#292524] px-4 py-2 text-sm text-[#D6D3D1] sm:inline-flex">
+                <ThemeToggle className="hidden sm:inline-flex" />
+                <div className="hidden rounded-full border border-[var(--border)] bg-card px-4 py-2 text-sm text-[var(--text-secondary)] sm:inline-flex">
                   Free Plan
                 </div>
-                <UserButton
-                  appearance={{
-                    elements: {
-                      avatarBox: "h-10 w-10",
-                    },
-                  }}
-                />
+                <UserButton appearance={userButtonAppearance} />
               </div>
             </div>
           </header>

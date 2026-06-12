@@ -5,10 +5,13 @@ import { githubProfiles, users } from "@/db/schema";
 import { GithubAnalyzer } from "@/features/github/analyzer";
 import { buildGitHubViewModel, type GitHubViewModel } from "@/features/github/view-model";
 import { getDb } from "@/lib/db";
+import { ensureAppSchema } from "@/lib/db-schema";
 
 export default async function GithubPage() {
   const { userId: clerkUserId } = await auth();
   const db = getDb();
+
+  await ensureAppSchema();
 
   const [user] = clerkUserId
     ? await db

@@ -2,25 +2,71 @@
 
 :root {
   --background: #1c1917;
+  --surface: #292524;
   --card: #292524;
   --primary: #c08457;
   --secondary: #d6ad60;
   --accent: #faf3e0;
-  --foreground: #ffffff;
-  --muted: #a1a1aa;
-  --border: #3a312d;
+  --text-primary: #ffffff;
+  --text-secondary: #d6d3d1;
+  --border: rgba(250, 243, 224, 0.08);
   --ring: rgba(214, 173, 96, 0.4);
+  --glass-bg: rgba(41, 37, 36, 0.75);
+  --surface-elevated: #221e1d;
+  --surface-soft: #2f2927;
+  --surface-contrast: #1f1b1a;
+  --brand-soft: rgba(192, 132, 87, 0.12);
+  --brand-soft-strong: rgba(192, 132, 87, 0.18);
+  --brand-glow: rgba(192, 132, 87, 0.08);
+  --hero-glow: rgba(250, 243, 224, 0.04);
+  --card-shadow: 0 16px 40px rgba(0, 0, 0, 0.22);
+  --card-shadow-soft: 0 10px 30px rgba(0, 0, 0, 0.16);
+  --inset-highlight: inset 0 1px 0 rgba(255, 255, 255, 0.03);
+  --auth-card: #faf3e0;
+  --auth-surface: #ffffff;
+  --auth-text: #1c1917;
+  --auth-muted: #78716c;
+}
+
+.light {
+  --background: #faf3e0;
+  --surface: #ffffff;
+  --card: #fff9f0;
+  --primary: #c08457;
+  --secondary: #8b5e3c;
+  --accent: #1c1917;
+  --text-primary: #1c1917;
+  --text-secondary: #57534e;
+  --border: rgba(28, 25, 23, 0.1);
+  --ring: rgba(192, 132, 87, 0.22);
+  --glass-bg: rgba(255, 249, 240, 0.78);
+  --surface-elevated: #ffffff;
+  --surface-soft: #f7eee2;
+  --surface-contrast: #f1e5d6;
+  --brand-soft: rgba(192, 132, 87, 0.1);
+  --brand-soft-strong: rgba(192, 132, 87, 0.14);
+  --brand-glow: rgba(192, 132, 87, 0.08);
+  --hero-glow: rgba(28, 25, 23, 0.04);
+  --card-shadow: 0 16px 36px rgba(40, 28, 18, 0.08);
+  --card-shadow-soft: 0 8px 22px rgba(40, 28, 18, 0.06);
+  --inset-highlight: inset 0 1px 0 rgba(255, 255, 255, 0.65);
+  --auth-card: #fff9f0;
+  --auth-surface: #ffffff;
+  --auth-text: #1c1917;
+  --auth-muted: #57534e;
 }
 
 @theme inline {
   --color-background: var(--background);
+  --color-surface: var(--surface);
   --color-card: var(--card);
-  --color-primary: var(--primary);
-  --color-secondary: var(--secondary);
+  --color-brand: var(--primary);
+  --color-brandSecondary: var(--secondary);
   --color-accent: var(--accent);
-  --color-foreground: var(--foreground);
-  --color-muted: var(--muted);
+  --color-primaryText: var(--text-primary);
+  --color-secondaryText: var(--text-secondary);
   --color-border: var(--border);
+  --color-foreground: var(--text-primary);
   --font-sans: "Inter", "Segoe UI", sans-serif;
   --font-mono: "SFMono-Regular", "Menlo", monospace;
 }
@@ -35,8 +81,8 @@ html {
 }
 
 body {
-  background: #1c1917;
-  color: var(--foreground);
+  background: var(--background);
+  color: var(--text-primary);
   font-family: var(--font-sans);
 }
 
@@ -60,4 +106,97 @@ select {
   box-shadow:
     0 0 0 1px rgba(214, 173, 96, 0.14),
     0 0 32px rgba(192, 132, 87, 0.14);
+}
+
+.light .bg-\[\#1C1917\],
+.light .bg-\[\#1c1917\] {
+  background-color: var(--background) !important;
+}
+
+.light .bg-\[\#292524\],
+.light .bg-\[\#221e1d\],
+.light .bg-\[\#2f2927\],
+.light .bg-\[\#1f1b1a\],
+.light .bg-\[\#201c1b\],
+.light .bg-\[\#2E2A28\] {
+  background-color: var(--card) !important;
+}
+
+.light .bg-\[rgba\(41\,37\,36\,0\.75\)\],
+.light .bg-\[rgba\(41\,37\,36\,0\.82\)\],
+.light .bg-\[rgba\(41\,37\,36\,0\.92\)\],
+.light .bg-\[rgba\(41\,37\,36\,0\.7\)\] {
+  background-color: var(--glass-bg) !important;
+}
+
+.light .text-white,
+.light .text-\[\#FFFFFF\],
+.light .text-\[\#FAF3E0\] {
+  color: var(--text-primary) !important;
+}
+
+.light .text-\[\#D6D3D1\],
+.light .text-\[\#78716C\],
+.light .text-\[\#57534E\] {
+  color: var(--text-secondary) !important;
+}
+
+.light .text-\[\#D6AD60\],
+.light .text-\[\#C08457\] {
+  color: var(--secondary) !important;
+}
+
+.light .border-\[rgba\(250\,243\,224\,0\.08\)\],
+.light .border-\[rgba\(250\,243\,224\,0\.10\)\],
+.light .border-\[rgba\(250\,243\,224\,0\.12\)\],
+.light .border-\[rgba\(250\,243\,224\,0\.14\)\],
+.light .border-\[rgba\(250\,243\,224\,0\.16\)\],
+.light .border-\[rgba\(250\,243\,224\,0\.18\)\] {
+  border-color: var(--border) !important;
+}
+
+.light .bg-\[rgba\(192\,132\,87\,0\.12\)\],
+.light .bg-\[rgba\(192\,132\,87\,0\.14\)\],
+.light .bg-\[rgba\(192\,132\,87\,0\.16\)\],
+.light .bg-\[rgba\(192\,132\,87\,0\.18\)\],
+.light .bg-\[rgba\(192\,132\,87\,0\.08\)\] {
+  background-color: var(--brand-soft) !important;
+}
+
+.light .shadow-\[0_16px_40px_rgba\(0\,0\,0\,0\.22\)\],
+.light .shadow-\[0_18px_60px_rgba\(0\,0\,0\,0\.22\)\],
+.light .shadow-\[0_10px_30px_rgba\(0\,0\,0\,0\.16\)\],
+.light .shadow-\[0_12px_40px_rgba\(0\,0\,0\,0\.28\)\] {
+  box-shadow: var(--card-shadow) !important;
+}
+
+.cl-socialButtonsProviderIcon {
+  color: var(--auth-text) !important;
+}
+
+.cl-socialButtonsProviderIcon svg,
+.cl-socialButtonsProviderIcon svg path {
+  fill: currentColor !important;
+  stroke: currentColor !important;
+  color: currentColor !important;
+}
+
+.cl-socialButtonsBlockButton__github svg,
+.cl-socialButtonsBlockButton__github svg path,
+.cl-socialButtonsBlockButton[data-provider="github"] svg,
+.cl-socialButtonsBlockButton[data-provider="github"] svg path {
+  fill: var(--auth-text) !important;
+  stroke: var(--auth-text) !important;
+  color: var(--auth-text) !important;
+}
+
+.cl-socialButtonsBlockButton:hover .cl-socialButtonsBlockButtonText,
+.cl-socialButtonsBlockButton:focus .cl-socialButtonsBlockButtonText,
+.cl-socialButtonsBlockButton:active .cl-socialButtonsBlockButtonText {
+  color: var(--auth-text) !important;
+}
+
+.cl-badge,
+.cl-badgeText {
+  display: none !important;
 }

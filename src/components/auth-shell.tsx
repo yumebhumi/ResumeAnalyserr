@@ -2,7 +2,9 @@
 
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { ArrowLeft, BarChart3, Coffee, GitBranch, LayoutTemplate } from "lucide-react";
+import { ArrowLeft, BarChart3, GitBranch, LayoutTemplate } from "lucide-react";
+
+import { BrandLogo } from "@/components/brand-logo";
 
 type AuthShellProps = {
   title: string;
@@ -24,28 +26,26 @@ const microTrust = [
 
 export function AuthShell({ title, subtitle, children }: AuthShellProps) {
   return (
-    <main className="relative min-h-screen overflow-hidden bg-[#1C1917] px-4 py-6 sm:px-6 lg:px-8">
+    <main className="relative min-h-screen overflow-hidden bg-background px-4 py-4 sm:px-6 lg:h-screen lg:px-8 lg:py-2">
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute left-0 top-0 h-[420px] w-[420px] rounded-full blur-[160px]"
-        style={{ background: "rgba(192,132,87,0.08)" }}
-      />
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute bottom-0 right-0 h-[360px] w-[360px] rounded-full blur-[160px]"
-        style={{ background: "rgba(250,243,224,0.04)" }}
+        className="pointer-events-none absolute left-1/2 top-0 h-[420px] w-[720px] -translate-x-1/2 rounded-full blur-[140px]"
+        style={{
+          background:
+            "radial-gradient(circle at top, rgba(192,132,87,0.08), transparent 60%)",
+        }}
       />
 
-      <div className="mx-auto max-w-[1200px]">
+      <div className="mx-auto flex h-full max-w-[1200px] flex-col">
         <Link
           href="/"
-          className="inline-flex items-center gap-2 text-sm text-[#D6D3D1] transition hover:text-[#FAF3E0]"
+          className="inline-flex items-center gap-2 text-sm text-[var(--text-secondary)] transition hover:text-[var(--accent)]"
         >
           <ArrowLeft className="h-4 w-4" />
           Back to Home
         </Link>
 
-        <div className="relative mt-6 grid items-center gap-8 lg:min-h-[calc(100vh-7rem)] lg:grid-cols-[0.55fr_0.45fr]">
+        <div className="relative mt-3 grid flex-1 items-center gap-4 lg:grid-cols-[0.6fr_0.4fr]">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -53,40 +53,35 @@ export function AuthShell({ title, subtitle, children }: AuthShellProps) {
             className="hidden lg:block"
           >
             <div className="max-w-[560px]">
-              <div className="flex items-center gap-3">
-                <div className="flex h-11 w-11 items-center justify-center rounded-full border border-[rgba(250,243,224,0.10)] bg-[#292524] text-[#D6AD60]">
-                  <Coffee className="h-5 w-5" />
-                </div>
-                <p className="text-lg font-semibold text-white">HireMe AI</p>
-              </div>
+              <BrandLogo iconClassName="h-11 w-11 rounded-full border border-[var(--border)]" />
 
-              <p className="mt-10 text-xs font-medium uppercase tracking-[0.15em] text-[#D6AD60]">
+              <p className="mt-7 text-xs font-medium uppercase tracking-[0.15em] text-[var(--secondary)]">
                 Career OS
               </p>
-              <h1 className="mt-4 max-w-[560px] text-5xl font-bold leading-[0.95] tracking-[-0.04em] text-white">
+              <h1 className="mt-4 max-w-[560px] text-[46px] font-bold leading-[0.95] tracking-[-0.04em] text-[var(--text-primary)] xl:text-[54px]">
                 {title}
               </h1>
-              <p className="mt-6 max-w-[480px] text-lg leading-8 text-[#D6D3D1]">
+              <p className="mt-4 max-w-[480px] text-[17px] leading-7 text-[var(--text-secondary)]">
                 {subtitle}
               </p>
 
-              <div className="mt-6 flex flex-wrap gap-3">
+              <div className="mt-5 flex flex-wrap gap-3">
                 {microTrust.map((item) => (
-                  <div key={item} className="flex items-center gap-2 text-sm text-[#FAF3E0]">
-                    <span className="text-[#D6AD60]">✓</span>
+                  <div key={item} className="flex items-center gap-2 text-sm text-[var(--accent)]">
+                    <span className="text-[var(--secondary)]">✓</span>
                     <span>{item}</span>
                   </div>
                 ))}
               </div>
 
-              <div className="mt-10 flex flex-wrap gap-3">
+              <div className="mt-7 flex flex-wrap gap-3">
                 {trustStats.map(({ label, icon: Icon }) => (
                   <div
                     key={label}
-                    className="flex h-12 items-center gap-3 rounded-full border border-[rgba(250,243,224,0.08)] bg-[rgba(41,37,36,0.7)] px-4"
+                    className="flex h-12 items-center gap-3 rounded-full border border-[var(--border)] bg-[var(--glass-bg)] px-4"
                   >
-                    <Icon className="h-4 w-4 text-[#C08457]" />
-                    <p className="text-sm font-medium text-white">{label}</p>
+                    <Icon className="h-4 w-4 text-[var(--primary)]" />
+                    <p className="text-sm font-medium text-[var(--text-primary)]">{label}</p>
                   </div>
                 ))}
               </div>
@@ -97,7 +92,7 @@ export function AuthShell({ title, subtitle, children }: AuthShellProps) {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.45, ease: "easeOut", delay: 0.06 }}
-            className="relative mx-auto flex min-h-full w-full max-w-[640px] items-center justify-center"
+            className="relative mx-auto flex min-h-full w-full max-w-[500px] items-center justify-center lg:origin-center lg:scale-[0.88] xl:scale-[0.93] 2xl:scale-100 xl:max-w-[520px]"
           >
             <div
               aria-hidden="true"
@@ -105,33 +100,28 @@ export function AuthShell({ title, subtitle, children }: AuthShellProps) {
               style={{ background: "rgba(192,132,87,0.10)" }}
             />
 
-            <div className="relative flex min-h-full w-full max-w-[480px] flex-col rounded-[32px] border border-[rgba(250,243,224,0.08)] bg-[rgba(41,37,36,0.85)] p-8 shadow-[0_25px_80px_rgba(0,0,0,0.35)]">
+            <div className="relative flex min-h-full w-full max-w-[500px] flex-col rounded-[28px] border border-[var(--border)] bg-[color:var(--glass-bg)] p-3.5 shadow-[var(--card-shadow)] xl:max-w-[520px]">
               <div className="h-[3px] rounded-full bg-[linear-gradient(90deg,#8B5E3C,#C08457,#FAF3E0)]" />
               <div className="mt-6 lg:hidden">
-                <div className="flex items-center gap-3">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-full border border-[rgba(250,243,224,0.10)] bg-[#221e1d] text-[#D6AD60]">
-                    <Coffee className="h-4 w-4" />
-                  </div>
-                  <p className="font-semibold text-white">HireMe AI</p>
-                </div>
-                <p className="mt-6 text-xs font-medium uppercase tracking-[0.15em] text-[#D6AD60]">
+                <BrandLogo iconClassName="h-10 w-10 rounded-full border border-[var(--border)]" />
+                <p className="mt-6 text-xs font-medium uppercase tracking-[0.15em] text-[var(--secondary)]">
                   Career OS
                 </p>
-                <h2 className="mt-3 text-3xl font-bold leading-[0.95] tracking-[-0.04em] text-white">
+                <h2 className="mt-3 text-3xl font-bold leading-[0.95] tracking-[-0.04em] text-[var(--text-primary)]">
                   {title}
                 </h2>
-                <p className="mt-3 text-sm leading-7 text-[#D6D3D1]">{subtitle}</p>
+                <p className="mt-3 text-sm leading-7 text-[var(--text-secondary)]">{subtitle}</p>
                 <div className="mt-5 flex flex-wrap gap-3">
                   {microTrust.map((item) => (
-                    <div key={item} className="flex items-center gap-2 text-xs text-[#FAF3E0]">
-                      <span className="text-[#D6AD60]">✓</span>
+                    <div key={item} className="flex items-center gap-2 text-xs text-[var(--accent)]">
+                      <span className="text-[var(--secondary)]">✓</span>
                       <span>{item}</span>
                     </div>
                   ))}
                 </div>
               </div>
 
-              <div className="flex min-h-full flex-1 items-center justify-center py-6">
+              <div className="flex min-h-full flex-1 items-center justify-center py-2">
                 <div className="w-full">{children}</div>
               </div>
             </div>

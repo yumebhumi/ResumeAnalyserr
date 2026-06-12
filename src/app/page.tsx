@@ -65,6 +65,11 @@ const heroTaglines = [
 
 export default function Home() {
   const [activeTagline, setActiveTagline] = useState(0);
+  const atsScore = 86;
+  const scoreSize = 220;
+  const scoreStroke = 14;
+  const scoreRadius = (scoreSize - scoreStroke) / 2;
+  const scoreCircumference = 2 * Math.PI * scoreRadius;
 
   useEffect(() => {
     const interval = window.setInterval(() => {
@@ -107,11 +112,12 @@ export default function Home() {
                 </AnimatePresence>
               </div>
               <h1 className="max-w-4xl text-4xl font-bold leading-[1.02] text-white sm:text-5xl lg:text-[72px]">
-                Land More Interviews with AI
+                Get Hired. Not Ghosted.
               </h1>
               <p className="max-w-2xl text-lg leading-7 text-[#D6D3D1]">
-                Analyze your resume, improve your ATS score, review your GitHub
-                profile, and build a recruiter-ready portfolio in minutes.
+                Analyze your resume, optimize your ATS score, improve your
+                GitHub profile, and build a recruiter-ready portfolio—all in
+                one workspace.
               </p>
             </div>
 
@@ -143,32 +149,76 @@ export default function Home() {
 
             <div className="relative mt-6 flex items-start justify-between">
               <div>
-                <p className="text-sm font-medium text-[#D6D3D1]">Product Preview</p>
-                <h3 className="mt-2 text-2xl font-semibold text-white">ATS Readiness Snapshot</h3>
+                <p className="text-sm font-medium text-[var(--text-secondary)]">Career Intelligence</p>
+                <h3 className="mt-2 text-2xl font-semibold text-[var(--text-primary)]">
+                  HireMe Score
+                </h3>
               </div>
-              <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-[rgba(250,243,224,0.10)] text-[#FAF3E0]">
+              <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-[var(--border)] bg-[var(--surface-elevated)] text-[var(--accent)]">
                 <BarChart3 className="h-5 w-5" />
               </div>
             </div>
 
             <div className="relative mt-6 grid gap-4 lg:grid-cols-[0.9fr_1.1fr]">
-              <div className="flex items-center justify-center rounded-[24px] border border-[rgba(250,243,224,0.10)] bg-[#221e1d] p-5">
-                <div className="relative flex h-36 w-36 items-center justify-center rounded-full border border-[rgba(250,243,224,0.10)]">
-                  <div className="absolute inset-2 rounded-full border-[10px] border-[#3a312d]" />
+              <div className="rounded-[28px] border border-[var(--border)] bg-[var(--surface-soft)] p-8">
+                <div className="relative flex items-center justify-center">
                   <div
-                    className="absolute inset-2 rounded-full border-[10px] border-transparent"
+                    aria-hidden="true"
+                    className="absolute h-[168px] w-[168px] rounded-full blur-[60px]"
                     style={{
                       background:
-                        "conic-gradient(from 180deg, #8B5E3C 0deg, #C08457 230deg, #FAF3E0 309.6deg, transparent 309.6deg)",
-                      WebkitMask:
-                        "radial-gradient(farthest-side, transparent calc(100% - 10px), #000 calc(100% - 10px))",
+                        "radial-gradient(circle, rgba(192,132,87,0.16), transparent 60%)",
                     }}
                   />
-                  <div className="text-center">
-                    <p className="text-4xl font-semibold text-white">86</p>
-                    <p className="mt-1.5 text-sm text-[#D6D3D1]">out of 100</p>
+                  <div className="relative flex h-[220px] w-[220px] items-center justify-center">
+                    <svg
+                      viewBox={`0 0 ${scoreSize} ${scoreSize}`}
+                      className="absolute inset-0 h-full w-full -rotate-90"
+                      aria-hidden="true"
+                    >
+                      <defs>
+                        <linearGradient id="ats-score-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                          <stop offset="0%" stopColor="#8B5E3C" />
+                          <stop offset="55%" stopColor="#C08457" />
+                          <stop offset="100%" stopColor="#D6AD60" />
+                        </linearGradient>
+                      </defs>
+                      <circle
+                        cx={scoreSize / 2}
+                        cy={scoreSize / 2}
+                        r={scoreRadius}
+                        fill="none"
+                        stroke="rgba(250,243,224,0.10)"
+                        strokeWidth={scoreStroke}
+                      />
+                      <motion.circle
+                        cx={scoreSize / 2}
+                        cy={scoreSize / 2}
+                        r={scoreRadius}
+                        fill="none"
+                        stroke="url(#ats-score-gradient)"
+                        strokeWidth={scoreStroke}
+                        strokeLinecap="round"
+                        strokeDasharray={scoreCircumference}
+                        initial={{ strokeDashoffset: scoreCircumference }}
+                        animate={{
+                          strokeDashoffset:
+                            scoreCircumference - (scoreCircumference * atsScore) / 100,
+                        }}
+                        transition={{ duration: 1.1, ease: "easeOut" }}
+                      />
+                    </svg>
+                    <div className="relative text-center">
+                      <p className="text-[56px] font-extrabold leading-none text-[var(--text-primary)]">
+                        {atsScore}
+                      </p>
+                      <p className="mt-2 text-base text-[var(--text-secondary)]">out of 100</p>
+                    </div>
                   </div>
                 </div>
+                <p className="mt-4 text-center text-sm font-medium tracking-[0.18em] text-[#D6AD60]">
+                  HireMe Score
+                </p>
               </div>
 
               <div className="space-y-3">
@@ -178,15 +228,15 @@ export default function Home() {
                   ["Resume Strength", "Strong"],
                   ["Portfolio Readiness", "92%"],
                 ].map(([label, value]) => (
-                  <div
+                  <motion.div
                     key={label}
-                    className="rounded-[20px] border border-[rgba(250,243,224,0.10)] bg-[#221e1d] px-4 py-3.5"
+                    whileHover={{ y: -2 }}
+                    transition={{ duration: 0.2, ease: "easeOut" }}
+                    className="flex h-16 items-center justify-between rounded-[18px] border border-[var(--border)] bg-[var(--surface-soft)] px-5"
                   >
-                    <div className="flex items-center justify-between gap-4">
-                      <p className="text-sm font-medium text-white">{label}</p>
-                      <p className="text-sm font-medium text-[#D6AD60]">{value}</p>
-                    </div>
-                  </div>
+                    <p className="text-sm font-medium text-[var(--text-secondary)]">{label}</p>
+                    <p className="text-sm font-semibold text-[#D6AD60]">{value}</p>
+                  </motion.div>
                 ))}
               </div>
             </div>
@@ -372,28 +422,28 @@ export default function Home() {
 
           <div className="mt-10 grid gap-5 lg:grid-cols-2">
             <PricingCard
-              tier="Free"
-              price="$0"
-              description="For trying resume analysis and understanding your baseline ATS quality."
+              tier="Free Plan"
+              price="₹0/month"
+              description="For trying HireMe AI and running your first analysis."
               features={[
-                "Basic resume analysis",
-                "ATS score preview",
-                "Limited portfolio draft access",
+                "1 resume analysis per month",
+                "Basic ATS score",
+                "Basic portfolio template",
+                "GitHub overview",
               ]}
-              cta="Get Started"
+              cta="Start Free"
             />
             <PricingCard
-              tier="Pro"
-              price="$29"
-              description="For candidates actively improving resume quality and building a stronger portfolio."
+              tier="Pro Plan"
+              price="₹299/month"
+              description="For serious applicants who want deeper AI insights."
               features={[
-                "Unlimited resume analyses",
-                "Full ATS recommendations",
-                "Portfolio builder",
-                "GitHub insights",
+                "Unlimited resume analysis",
+                "Premium resume templates",
+                "Recruiter insights",
+                "Advanced GitHub analysis",
               ]}
               highlighted
-              badge="Popular"
               cta="Upgrade to Pro"
             />
           </div>

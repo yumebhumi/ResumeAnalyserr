@@ -1,11 +1,12 @@
 import Link from "next/link";
 import { motion } from "framer-motion";
 
+import { BrandLogo } from "@/components/brand-logo";
 import { Button } from "@/components/ui/button";
 
 export function Footer() {
   return (
-    <footer className="w-full bg-[#1C1917] px-4 py-12 sm:px-6 lg:px-8 lg:py-16">
+    <footer id="about" className="w-full bg-background px-4 py-12 sm:px-6 lg:px-8 lg:py-16">
       <div className="mx-auto max-w-[1200px]">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -19,10 +20,10 @@ export function Footer() {
             className="pointer-events-none absolute left-1/2 top-1/2 h-[320px] w-[320px] -translate-x-1/2 -translate-y-1/2 rounded-full opacity-100 blur-[120px]"
             style={{ background: "rgba(192,132,87,0.08)" }}
           />
-          <h2 className="max-w-[700px] text-4xl font-extrabold leading-[1.02] text-white sm:text-5xl lg:text-[64px]">
+          <h2 className="max-w-[700px] text-4xl font-extrabold leading-[1.02] text-[var(--text-primary)] sm:text-5xl lg:text-[64px]">
             Ready to land your next opportunity?
           </h2>
-          <p className="mt-6 max-w-[500px] text-base leading-7 text-[#D6D3D1] sm:text-lg">
+          <p className="mt-6 max-w-[500px] text-base leading-7 text-[var(--text-secondary)] sm:text-lg">
             Analyze your resume. Build your portfolio. Stand out to recruiters.
           </p>
           <Button
@@ -34,10 +35,14 @@ export function Footer() {
           </Button>
         </motion.div>
 
-        <div className="mt-14 border-t border-[rgba(250,243,224,0.08)] pt-6">
-          <div className="flex flex-col gap-5 text-sm text-[#D6D3D1] lg:flex-row lg:items-center lg:justify-between">
+        <div className="mt-14 border-t border-[var(--border)] pt-6">
+          <div className="flex flex-col gap-5 text-sm text-[var(--text-secondary)] lg:flex-row lg:items-center lg:justify-between">
             <div className="text-left">
-              <p className="font-medium text-white">HireMe AI</p>
+              <BrandLogo
+                className="gap-2"
+                iconClassName="h-8 w-8 rounded-lg border border-[var(--border)]"
+                textClassName="text-sm font-medium"
+              />
               <p className="mt-2">© 2026 HireMe AI</p>
             </div>
 
@@ -48,7 +53,7 @@ export function Footer() {
             <div className="flex flex-wrap items-center gap-x-5 gap-y-3 lg:justify-end">
               <Link
                 href="https://github.com/yumebhumi"
-                className="text-[#D6D3D1] transition hover:text-white"
+                className="text-[var(--text-secondary)] transition hover:text-[var(--text-primary)]"
                 aria-label="GitHub"
               >
                 <svg
@@ -61,7 +66,7 @@ export function Footer() {
               </Link>
               <Link
                 href="https://x.com/coldcoffeecoder"
-                className="text-[#D6D3D1] transition hover:text-white"
+                className="text-[var(--text-secondary)] transition hover:text-[var(--text-primary)]"
                 aria-label="X"
               >
                 <svg
@@ -72,10 +77,10 @@ export function Footer() {
                   <path d="M18.901 1.153h3.68l-8.04 9.19L24 22.847h-7.406l-5.8-7.584-6.64 7.584H.47l8.6-9.83L0 1.154h7.594l5.243 6.932L18.9 1.153Zm-1.29 19.494h2.04L6.485 3.24H4.298L17.61 20.647Z" />
                 </svg>
               </Link>
-              <Link href="/" className="transition hover:text-white">
+              <Link href="/" className="transition hover:text-[var(--text-primary)]">
                 Privacy
               </Link>
-              <Link href="/" className="transition hover:text-white">
+              <Link href="/" className="transition hover:text-[var(--text-primary)]">
                 Terms
               </Link>
             </div>

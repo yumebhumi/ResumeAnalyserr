@@ -12,11 +12,11 @@ const buttonVariants = cva(
     variants: {
       variant: {
         default:
-          "bg-[#C08457] px-5 py-3 text-white hover:-translate-y-0.5",
+          "bg-[var(--primary)] px-5 py-3 text-white hover:-translate-y-0.5 hover:bg-[var(--secondary)]",
         secondary:
-          "border border-[#C08457] bg-transparent px-5 py-3 text-white hover:-translate-y-0.5 hover:bg-[#C08457]/6",
+          "border border-[var(--border)] bg-transparent px-5 py-3 text-[var(--accent)] hover:-translate-y-0.5 hover:bg-[var(--brand-soft)] hover:text-[var(--text-primary)]",
         ghost:
-          "px-4 py-2.5 text-[#D6D3D1] hover:text-white",
+          "px-4 py-2.5 text-[var(--text-secondary)] hover:text-[var(--text-primary)]",
       },
       size: {
         default: "",

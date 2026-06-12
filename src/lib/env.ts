@@ -21,6 +21,14 @@ const serverEnvSchema = z.object({
         return undefined;
       }
 
+      if (value === "test") {
+        return "test_mode";
+      }
+
+      if (value === "live") {
+        return "live_mode";
+      }
+
       return value;
     },
     z.enum(["test_mode", "live_mode"]).optional(),

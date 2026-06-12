@@ -15,7 +15,7 @@ import {
 import { SectionCard } from "@/components/section-card";
 import { githubProfiles, portfolioDrafts, resumeAnalyses, users } from "@/db/schema";
 import { getDb } from "@/lib/db";
-import { ensureUsersTableColumns } from "@/lib/db-schema";
+import { ensureAppSchema } from "@/lib/db-schema";
 
 type AnalysisSnapshot = {
   id: string;
@@ -85,7 +85,7 @@ export default async function DashboardPage() {
   const { userId: clerkUserId } = await auth();
   const db = getDb();
 
-  await ensureUsersTableColumns();
+  await ensureAppSchema();
 
   const [user] = clerkUserId
     ? await db
@@ -95,49 +95,47 @@ export default async function DashboardPage() {
         .limit(1)
     : [];
 
-  const recentAnalyses = user
-    ? await db
-        .select({
-          id: resumeAnalyses.id,
-          fileName: resumeAnalyses.fileName,
-          atsScore: resumeAnalyses.atsScore,
-          analysisJson: resumeAnalyses.analysisJson,
-          createdAt: resumeAnalyses.createdAt,
-        })
-        .from(resumeAnalyses)
-        .where(eq(resumeAnalyses.userId, user.id))
-        .orderBy(desc(resumeAnalyses.createdAt))
-        .limit(5)
-    : [];
+  const [recentAnalyses, githubRows, portfolioRows] = user
+    ? await Promise.all([
+        db
+          .select({
+            id: resumeAnalyses.id,
+            fileName: resumeAnalyses.fileName,
+            atsScore: resumeAnalyses.atsScore,
+            analysisJson: resumeAnalyses.analysisJson,
+            createdAt: resumeAnalyses.createdAt,
+          })
+          .from(resumeAnalyses)
+          .where(eq(resumeAnalyses.userId, user.id))
+          .orderBy(desc(resumeAnalyses.createdAt))
+          .limit(5),
+        db
+          .select({
+            id: githubProfiles.id,
+            username: githubProfiles.username,
+            stats: githubProfiles.stats,
+            analyzedAt: githubProfiles.analyzedAt,
+          })
+          .from(githubProfiles)
+          .where(eq(githubProfiles.userId, user.id))
+          .orderBy(desc(githubProfiles.analyzedAt))
+          .limit(1),
+        db
+          .select({
+            id: portfolioDrafts.id,
+            template: portfolioDrafts.template,
+            updatedAt: portfolioDrafts.updatedAt,
+          })
+          .from(portfolioDrafts)
+          .where(eq(portfolioDrafts.userId, user.id))
+          .orderBy(desc(portfolioDrafts.updatedAt))
+          .limit(1),
+      ])
+    : [[], [], []];
 
   const latestAnalysis = recentAnalyses[0] ?? null;
-
-  const [latestGithubProfile] = user
-    ? await db
-        .select({
-          id: githubProfiles.id,
-          username: githubProfiles.username,
-          stats: githubProfiles.stats,
-          analyzedAt: githubProfiles.analyzedAt,
-        })
-        .from(githubProfiles)
-        .where(eq(githubProfiles.userId, user.id))
-        .orderBy(desc(githubProfiles.analyzedAt))
-        .limit(1)
-    : [];
-
-  const [latestPortfolioDraft] = user
-    ? await db
-        .select({
-          id: portfolioDrafts.id,
-          template: portfolioDrafts.template,
-          updatedAt: portfolioDrafts.updatedAt,
-        })
-        .from(portfolioDrafts)
-        .where(eq(portfolioDrafts.userId, user.id))
-        .orderBy(desc(portfolioDrafts.updatedAt))
-        .limit(1)
-    : [];
+  const latestGithubProfile = githubRows[0];
+  const latestPortfolioDraft = portfolioRows[0];
 
   const atsScore = latestAnalysis?.atsScore ?? null;
   const githubHealth = extractGithubHealth(latestGithubProfile?.stats);
