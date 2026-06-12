@@ -1,6 +1,6 @@
-# HireMe AI ☕
+<h1 align="center">HireMe AI ☕</h1>
 
-> Get Hired. Not Ghosted.
+<h2 align="center">Get Hired. Not Ghosted.</h2>
 
 HireMe AI is an AI-powered career workspace for resume analysis, GitHub profile review, and recruiter-ready portfolio generation.
 
