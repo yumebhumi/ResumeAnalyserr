@@ -1,36 +1,289 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# ☕ HireMe AI
 
-## Getting Started
+> ### Get Hired. Not Ghosted.
 
-First, run the development server:
+HireMe AI is an AI-powered career workspace that helps developers, students, and job seekers optimize their resumes, improve ATS scores, analyze GitHub profiles, and generate recruiter-ready portfolios—all from a single platform.
+
+Built with modern web technologies and powered by Gemini AI, HireMe AI transforms job applications into a structured, data-driven process.
+
+---
+
+## 🚀 Features
+
+### 📄 Resume Analyzer
+
+Upload your resume and receive:
+
+* ATS Score Analysis
+* Keyword Match Detection
+* Skills Evaluation
+* Experience Assessment
+* Project Quality Review
+* Missing Skills Identification
+* AI-Powered Resume Suggestions
+* Improved Resume Bullet Points
+
+---
+
+### 🐙 GitHub Analyzer
+
+Analyze your GitHub profile and discover:
+
+* Repository Overview
+* Language Distribution
+* Project Quality Insights
+* Portfolio Readiness Score
+* Open Source Activity Analysis
+* Recruiter-Friendly Recommendations
+* Top Project Highlighting
+
+---
+
+### 🎨 Portfolio Builder
+
+Generate a professional developer portfolio instantly.
+
+Features include:
+
+* Resume-to-Portfolio Conversion
+* Live Portfolio Preview
+* Multiple Portfolio Templates
+* GitHub & LinkedIn Integration
+* Portfolio Publishing
+* Export Ready Code
+* Premium Portfolio Themes
+
+---
+
+### 🤖 AI Career Intelligence
+
+Powered by Gemini AI.
+
+Get:
+
+* Resume Optimization Suggestions
+* Recruiter-Oriented Feedback
+* Skill Gap Analysis
+* Project Improvement Recommendations
+* Career Positioning Insights
+
+---
+
+## ✨ Why HireMe AI?
+
+Most candidates:
+
+* Apply with weak resumes
+* Ignore ATS optimization
+* Have incomplete GitHub profiles
+* Lack professional portfolios
+
+HireMe AI helps bridge that gap using AI-powered analysis and actionable insights.
+
+---
+
+## 🛠 Tech Stack
+
+### Frontend
+
+* Next.js 15
+* React 19
+* TypeScript
+* Tailwind CSS
+* Framer Motion
+* Shadcn UI
+
+### Backend
+
+* Next.js API Routes
+* Drizzle ORM
+* Neon PostgreSQL
+
+### Authentication
+
+* Clerk Authentication
+
+### AI
+
+* Google Gemini API
+
+### Payments
+
+* Dodo Payments
+
+### Deployment
+
+* Vercel
+
+---
+
+## 📸 Screenshots
+
+### Landing Page
+
+*Add screenshot here*
+
+### Resume Analyzer
+
+*Add screenshot here*
+
+### GitHub Analyzer
+
+*Add screenshot here*
+
+### Portfolio Builder
+
+*Add screenshot here*
+
+---
+
+## 🏗 Project Structure
+
+```bash
+app/
+├── dashboard/
+├── analyze/
+├── github/
+├── portfolio/
+├── pricing/
+├── settings/
+
+components/
+lib/
+db/
+actions/
+api/
+```
+
+---
+
+## ⚙️ Environment Variables
+
+Create a `.env.local` file:
+
+```env
+DATABASE_URL=
+
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=
+CLERK_SECRET_KEY=
+
+GEMINI_API_KEY=
+
+DODO_PAYMENTS_API_KEY=
+DODO_PAYMENTS_ENVIRONMENT=
+DODO_PAYMENTS_WEBHOOK_KEY=
+
+NEXT_PUBLIC_APP_URL=
+```
+
+---
+
+## 🚀 Getting Started
+
+Clone the repository:
+
+```bash
+git clone https://github.com/yumebhumi/ResumeAnalyserr.git
+```
+
+Move into the project:
+
+```bash
+cd ResumeAnalyserr
+```
+
+Install dependencies:
+
+```bash
+npm install
+```
+
+Run the development server:
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+http://localhost:3000
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+---
 
-## Learn More
+## 🔒 Authentication
 
-To learn more about Next.js, take a look at the following resources:
+HireMe AI uses Clerk for:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+* Secure Authentication
+* OAuth Providers
+* Session Management
+* Protected Routes
+* User Profiles
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+---
 
-## Deploy on Vercel
+## 💳 Pricing
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+### Free Plan
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+* 1 Resume Analysis
+* Basic ATS Score
+* Basic Portfolio Template
+* GitHub Overview
+
+### Pro Plan
+
+* Unlimited Resume Analysis
+* Premium Templates
+* Recruiter Insights
+* Advanced GitHub Analysis
+* AI Optimization Credits
+* Portfolio Export
+* Custom Domains
+
+---
+
+## 🛣 Roadmap
+
+### Coming Soon
+
+* AI Mock Interviews
+* Cover Letter Generator
+* LinkedIn Analyzer
+* Job Tracker
+* Resume Version History
+* AI Career Coach
+* Application Tracking Dashboard
+* Recruiter Matching
+
+---
+
+## 👩‍💻 Author
+
+**Bhumika Choudhary**
+
+GitHub: https://github.com/yumebhumi
+
+X (Twitter): https://x.com/coldcoffeecoder
+
+---
+
+## ⭐ Support
+
+If you like this project, consider giving it a star on GitHub.
+
+It helps more developers discover HireMe AI.
+
+---
+
+## ☕ Final Thought
+
+Your resume gets you noticed.
+
+Your portfolio proves your skills.
+
+Your GitHub builds credibility.
+
+**HireMe AI helps you improve all three.**
