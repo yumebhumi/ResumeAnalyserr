@@ -43,10 +43,10 @@ export type GitHubAnalysisInput = {
 };
 
 export async function fetchGitHubAnalysisInput(username: string): Promise<GitHubAnalysisInput> {
-  const profile = await githubRequest<GitHubUser>(`/users/${username}`);
-  const repositories = await githubRequest<GitHubRepo[]>(
-    `/users/${username}/repos?sort=updated&per_page=100`,
-  );
+  const [profile, repositories] = await Promise.all([
+    githubRequest<GitHubUser>(`/users/${username}`),
+    githubRequest<GitHubRepo[]>(`/users/${username}/repos?sort=updated&per_page=100`),
+  ]);
 
   const publicRepos = repositories.filter((repo) => !repo.fork && !repo.archived);
   if (publicRepos.length === 0) {
@@ -136,7 +136,7 @@ export async function fetchGitHubAnalysisInput(username: string): Promise<GitHub
           ),
         ),
       ).slice(0, 5),
-      readmeSnippet: readme.slice(0, 1200),
+      readmeSnippet: normalizeReadme(readme).slice(0, 320),
       updatedAt: repo.pushed_at,
       url: repo.html_url,
     })),
@@ -184,4 +184,15 @@ async function fetchReadme(fullName: string) {
   } catch {
     return "";
   }
+}
+
+function normalizeReadme(readme: string) {
+  return readme
+    .replace(/```[\s\S]*?```/g, " ")
+    .replace(/`[^`]+`/g, " ")
+    .replace(/!\[[^\]]*\]\([^)]+\)/g, " ")
+    .replace(/\[[^\]]+\]\([^)]+\)/g, " ")
+    .replace(/[#>*_-]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
 }

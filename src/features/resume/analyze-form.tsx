@@ -89,7 +89,16 @@ export function AnalyzeForm() {
         body: formData,
       });
 
-      const payload = (await response.json()) as unknown;
+      const rawResponse = await response.text();
+      let payload: unknown = null;
+
+      if (rawResponse) {
+        try {
+          payload = JSON.parse(rawResponse) as unknown;
+        } catch {
+          payload = null;
+        }
+      }
 
       if (!response.ok) {
         const errorMessage =
@@ -98,9 +107,13 @@ export function AnalyzeForm() {
           "error" in payload &&
           typeof payload.error === "string"
             ? payload.error
-            : "Resume analysis failed.";
+            : rawResponse.trim() || "Resume analysis failed.";
 
         throw new Error(errorMessage);
+      }
+
+      if (!payload || typeof payload !== "object") {
+        throw new Error("Resume analysis returned an invalid response.");
       }
 
       setStepIndex(loadingSteps.length - 1);
@@ -216,21 +229,42 @@ export function AnalyzeForm() {
 
       {result ? (
         <div className="space-y-5">
-          <div className="grid gap-5 xl:grid-cols-[0.9fr_1.1fr]">
+          <div className="grid gap-5 xl:grid-cols-[0.95fr_1.05fr]">
             <div className="rounded-[24px] border border-[rgba(250,243,224,0.08)] bg-[#221e1d] p-6 text-white">
-              <p className="text-xs uppercase tracking-[0.3em] text-[#D6AD60]">
-                ATS Score
-              </p>
-              <p className="mt-4 text-6xl font-semibold text-[#FAF3E0]">
-                {result.analysis.atsScore}
-              </p>
-              <p className="mt-4 text-sm leading-7 text-[#D6D3D1]">
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <p className="text-xs uppercase tracking-[0.3em] text-[#D6AD60]">
+                    ATS Score
+                  </p>
+                  <p className="mt-4 text-6xl font-semibold text-[#FAF3E0]">
+                    {result.analysis.atsScore}
+                  </p>
+                </div>
+                <div
+                  className={`rounded-full px-3 py-1.5 text-xs font-medium ${
+                    result.analysis.atsScore >= 80
+                      ? "bg-[rgba(95,165,125,0.12)] text-[#B9E6C7]"
+                      : result.analysis.atsScore >= 60
+                        ? "bg-[rgba(214,173,96,0.12)] text-[#F3D897]"
+                        : "bg-[rgba(193,90,90,0.12)] text-[#F3B1B1]"
+                  }`}
+                >
+                  {getScoreLabel(result.analysis.atsScore)}
+                </div>
+              </div>
+              <p className="mt-4 max-w-xl text-sm leading-7 text-[#D6D3D1]">
                 {result.analysis.summary}
               </p>
             </div>
 
             <div className="rounded-[24px] border border-[rgba(250,243,224,0.08)] bg-[#221e1d] p-6">
-              <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+              <div className="mb-4">
+                <h3 className="text-lg font-semibold text-white">Score Breakdown</h3>
+                <p className="mt-1 text-sm text-[#D6D3D1]">
+                  Quick recruiter-style signal across the most important areas.
+                </p>
+              </div>
+              <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
                 {scoreCards.map(({ key, label }) => (
                   <div
                     key={key}
@@ -252,35 +286,40 @@ export function AnalyzeForm() {
             </div>
           </div>
 
-          <div className="grid gap-5 xl:grid-cols-2">
-            <CompactListCard
-              title="Missing skills"
-              icon={Target}
-              items={
-                result.analysis.missingSkills.length > 0
-                  ? result.analysis.missingSkills
-                  : result.analysis.missingKeywords
-              }
-              emptyLabel="No missing skills detected."
-            />
-            <CompactListCard
-              title="Recommended roles"
-              icon={Briefcase}
-              items={result.analysis.recommendedRoles}
-              emptyLabel="No roles recommended."
-            />
-            <CompactListCard
-              title="Strengths"
-              icon={CheckCircle2}
-              items={result.analysis.strengths}
-              emptyLabel="No strengths returned."
-            />
-            <CompactListCard
-              title="Weaknesses"
-              icon={AlertCircle}
-              items={result.analysis.weaknesses}
-              emptyLabel="No weaknesses returned."
-            />
+          <div className="grid gap-5 xl:grid-cols-[1.1fr_0.9fr]">
+            <div className="space-y-5">
+              <PreviewListCard
+                title="Top strengths"
+                icon={CheckCircle2}
+                items={result.analysis.strengths}
+                emptyLabel="No strengths returned."
+              />
+              <PreviewListCard
+                title="Top gaps"
+                icon={AlertCircle}
+                items={result.analysis.weaknesses}
+                emptyLabel="No weaknesses returned."
+              />
+            </div>
+
+            <div className="space-y-5">
+              <PreviewListCard
+                title="Missing skills"
+                icon={Target}
+                items={
+                  result.analysis.missingSkills.length > 0
+                    ? result.analysis.missingSkills
+                    : result.analysis.missingKeywords
+                }
+                emptyLabel="No missing skills detected."
+              />
+              <PreviewListCard
+                title="Recommended roles"
+                icon={Briefcase}
+                items={result.analysis.recommendedRoles}
+                emptyLabel="No roles recommended."
+              />
+            </div>
           </div>
 
           <div className="grid gap-5 xl:grid-cols-2">
@@ -294,6 +333,28 @@ export function AnalyzeForm() {
               items={result.analysis.improvedBullets}
               emptyLabel="No improved bullet points returned."
             />
+            <ExpandableCard
+              title="Missing skills"
+              icon={Target}
+              items={
+                result.analysis.missingSkills.length > 0
+                  ? result.analysis.missingSkills
+                  : result.analysis.missingKeywords
+              }
+              emptyLabel="No missing skills detected."
+            />
+            <ExpandableCard
+              title="All strengths"
+              icon={CheckCircle2}
+              items={result.analysis.strengths}
+              emptyLabel="No strengths returned."
+            />
+            <ExpandableCard
+              title="All weaknesses"
+              icon={AlertCircle}
+              items={result.analysis.weaknesses}
+              emptyLabel="No weaknesses returned."
+            />
           </div>
 
           <p className="font-mono text-xs text-[#D6D3D1]">
@@ -305,7 +366,7 @@ export function AnalyzeForm() {
   );
 }
 
-function CompactListCard({
+function PreviewListCard({
   title,
   icon: Icon,
   items,
@@ -316,6 +377,8 @@ function CompactListCard({
   items: string[];
   emptyLabel: string;
 }) {
+  const previewItems = items.slice(0, 3);
+
   return (
     <div className="rounded-[24px] border border-[rgba(250,243,224,0.08)] bg-[#221e1d] p-6">
       <div className="flex items-center gap-3">
@@ -325,11 +388,11 @@ function CompactListCard({
         <h3 className="text-lg font-semibold text-white">{title}</h3>
       </div>
       <div className="mt-4 space-y-3">
-        {items.length > 0 ? (
-          items.map((item) => (
+        {previewItems.length > 0 ? (
+          previewItems.map((item) => (
             <div
               key={item}
-              className="rounded-[18px] border border-[rgba(250,243,224,0.08)] bg-[#292524] px-4 py-3 text-sm text-[#D6D3D1]"
+              className="rounded-[18px] border border-[rgba(250,243,224,0.08)] bg-[#292524] px-4 py-3 text-sm leading-7 text-[#D6D3D1]"
             >
               {item}
             </div>
@@ -338,23 +401,37 @@ function CompactListCard({
           <p className="text-sm text-[#D6D3D1]">{emptyLabel}</p>
         )}
       </div>
+      {items.length > 3 ? (
+        <p className="mt-4 text-xs uppercase tracking-[0.18em] text-[#D6AD60]">
+          +{items.length - 3} more in detailed sections below
+        </p>
+      ) : null}
     </div>
   );
 }
 
 function ExpandableCard({
   title,
+  icon: Icon,
   items,
   emptyLabel,
 }: {
   title: string;
+  icon?: React.ComponentType<{ className?: string }>;
   items: string[];
   emptyLabel: string;
 }) {
   return (
     <details className="group rounded-[24px] border border-[rgba(250,243,224,0.08)] bg-[#221e1d] p-6 open:bg-[#221e1d]">
       <summary className="flex cursor-pointer list-none items-center justify-between gap-4">
-        <h3 className="text-lg font-semibold text-white">{title}</h3>
+        <div className="flex items-center gap-3">
+          {Icon ? (
+            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[rgba(192,132,87,0.14)] text-[#C08457]">
+              <Icon className="h-4 w-4" />
+            </div>
+          ) : null}
+          <h3 className="text-lg font-semibold text-white">{title}</h3>
+        </div>
         <ChevronDown className="h-5 w-5 text-[#D6AD60] transition group-open:rotate-180" />
       </summary>
       <div className="mt-4 space-y-3">
@@ -373,4 +450,16 @@ function ExpandableCard({
       </div>
     </details>
   );
+}
+
+function getScoreLabel(score: number) {
+  if (score >= 80) {
+    return "Strong fit";
+  }
+
+  if (score >= 60) {
+    return "Good base";
+  }
+
+  return "Needs work";
 }

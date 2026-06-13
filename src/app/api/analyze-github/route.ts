@@ -1,10 +1,14 @@
 import { auth } from "@clerk/nextjs/server";
+import { and, desc, eq, gte } from "drizzle-orm";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
+import { githubProfiles, users } from "@/db/schema";
 import { generateGithubAnalysis } from "@/features/github/analyze";
 import { fetchGitHubAnalysisInput } from "@/features/github/fetch";
 import { saveGithubAnalysis } from "@/features/github/persist";
+import { getDb } from "@/lib/db";
+import { ensureAppSchema } from "@/lib/db-schema";
 
 const requestSchema = z.object({
   username: z.string().trim().min(1).max(39).regex(/^[A-Za-z0-9-]+$/),
@@ -19,6 +23,68 @@ export async function POST(request: Request) {
 
   try {
     const { username } = requestSchema.parse(await request.json());
+    const db = getDb();
+
+    await ensureAppSchema();
+
+    const [user] = await db
+      .select({ id: users.id })
+      .from(users)
+      .where(eq(users.clerkUserId, clerkUserId))
+      .limit(1);
+
+    const sixHoursAgo = new Date(Date.now() - 1000 * 60 * 60 * 6);
+    const normalizedUsername = username.toLowerCase();
+
+    if (user) {
+      const [cachedProfile] = await db
+        .select({
+          id: githubProfiles.id,
+          username: githubProfiles.username,
+          summary: githubProfiles.summary,
+          stats: githubProfiles.stats,
+        })
+        .from(githubProfiles)
+        .where(
+          and(
+            eq(githubProfiles.userId, user.id),
+            eq(githubProfiles.username, normalizedUsername),
+            gte(githubProfiles.analyzedAt, sixHoursAgo),
+          ),
+        )
+        .orderBy(desc(githubProfiles.analyzedAt))
+        .limit(1);
+
+      if (cachedProfile?.summary && cachedProfile.stats) {
+        const analysis = cachedProfile.summary as {
+          portfolioReadyScore: number;
+          languages: string[];
+          topRepositories: Array<Record<string, unknown>>;
+          recommendations: string[];
+        };
+        const stats = cachedProfile.stats as {
+          repositories: number;
+          stars: number;
+          languages: string[];
+          healthScore: number;
+          commitActivity: "Low" | "Medium" | "High";
+        };
+
+        return NextResponse.json({
+          profileId: cachedProfile.id,
+          username: cachedProfile.username,
+          totalRepos: stats.repositories,
+          totalStars: stats.stars,
+          topLanguages: analysis.languages,
+          bestProjects: analysis.topRepositories,
+          portfolioReadyScore: analysis.portfolioReadyScore,
+          suggestions: analysis.recommendations,
+          stats,
+          analysis,
+        });
+      }
+    }
+
     const githubInput = await fetchGitHubAnalysisInput(username);
     const analysis = await generateGithubAnalysis(githubInput);
     const stats = {

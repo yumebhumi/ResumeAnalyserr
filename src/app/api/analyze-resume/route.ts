@@ -8,7 +8,7 @@ import {
   SUPPORTED_RESUME_EXTENSIONS,
   SUPPORTED_RESUME_TYPES,
 } from "@/features/resume/constants";
-import { extractResumeText } from "@/features/resume/parse";
+import { extractResumeTextWithFallback } from "@/features/resume/parse";
 import { saveResumeAnalysis } from "@/features/resume/persist";
 
 const requestSchema = z.object({
@@ -67,7 +67,11 @@ export async function POST(request: Request) {
     }
 
     const buffer = Buffer.from(await file.arrayBuffer());
-    const extractedText = await extractResumeText(fileName, file.type, buffer);
+    const extractedText = await extractResumeTextWithFallback(
+      fileName,
+      file.type,
+      buffer,
+    );
 
     if (extractedText.length < 80) {
       return NextResponse.json(
@@ -108,6 +112,8 @@ export async function POST(request: Request) {
       ...normalizedAnalysis,
     });
   } catch (error) {
+    console.error("Resume analysis request failed", error);
+
     if (error instanceof z.ZodError) {
       return NextResponse.json(
         { error: "Invalid request payload.", details: error.flatten() },

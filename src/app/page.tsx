@@ -292,13 +292,13 @@ export default function Home() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, amount: 0.3 }}
                 transition={{ duration: 0.4, delay: index * 0.06 }}
-                className="relative rounded-[24px] border border-[rgba(250,243,224,0.08)] bg-[#292524] p-6 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)] lg:border-none lg:bg-transparent lg:p-0 lg:shadow-none"
+                className="relative rounded-[24px] border border-border bg-card p-6 shadow-[var(--inset-highlight)] lg:min-h-[200px] lg:border-0 lg:bg-transparent lg:p-0 lg:shadow-none"
               >
-                <div className="relative z-10 flex h-12 w-12 items-center justify-center rounded-full border border-[rgba(250,243,224,0.08)] bg-[#2f2927] text-sm font-semibold text-[#FAF3E0] lg:bg-[#292524]">
+                <div className="relative z-10 flex h-12 w-12 items-center justify-center rounded-full border border-border bg-[var(--surface-soft)] text-sm font-semibold text-primaryText lg:bg-card">
                   {index + 1}
                 </div>
-                <p className="mt-5 text-lg font-semibold text-white">{step.title}</p>
-                <p className="mt-3 max-w-sm text-base leading-7 text-[#D6D3D1]">
+                <p className="mt-5 text-lg font-semibold text-primaryText">{step.title}</p>
+                <p className="mt-3 max-w-sm text-base leading-7 text-secondaryText">
                   {step.body}
                 </p>
               </motion.div>
