@@ -82,7 +82,7 @@ export async function POST(request: Request) {
         .limit(1);
     }
 
-    const [analysis] = user
+    const [analysis] = user && db
       ? body.resumeAnalysisId
         ? await db
             .select({

@@ -18,22 +18,28 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const hasClerkConfig = Boolean(process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY);
+
   return (
     <html lang="en" suppressHydrationWarning>
       <body className="min-h-screen bg-background text-foreground antialiased">
         <ThemeProvider>
-          <ClerkProvider
-            appearance={clerkAppearance}
-            localization={clerkLocalization}
-            signInForceRedirectUrl="/dashboard"
-            signInUrl="/sign-in"
-            signInFallbackRedirectUrl="/dashboard"
-            signUpForceRedirectUrl="/dashboard"
-            signUpUrl="/sign-up"
-            signUpFallbackRedirectUrl="/dashboard"
-          >
-            {children}
-          </ClerkProvider>
+          {hasClerkConfig ? (
+            <ClerkProvider
+              appearance={clerkAppearance}
+              localization={clerkLocalization}
+              signInForceRedirectUrl="/dashboard"
+              signInUrl="/sign-in"
+              signInFallbackRedirectUrl="/dashboard"
+              signUpForceRedirectUrl="/dashboard"
+              signUpUrl="/sign-up"
+              signUpFallbackRedirectUrl="/dashboard"
+            >
+              {children}
+            </ClerkProvider>
+          ) : (
+            children
+          )}
         </ThemeProvider>
       </body>
     </html>

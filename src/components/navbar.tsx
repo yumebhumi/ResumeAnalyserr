@@ -37,6 +37,16 @@ const navLinks = [
 ];
 
 export function Navbar() {
+  const authEnabled = Boolean(process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY);
+
+  if (!authEnabled) {
+    return <NavbarWithoutAuth />;
+  }
+
+  return <NavbarWithAuth />;
+}
+
+function NavbarWithAuth() {
   const [isOpen, setIsOpen] = useState(false);
   const { isSignedIn } = useAuth();
 
@@ -209,6 +219,93 @@ export function Navbar() {
               </div>
               </>
             ) : null}
+          </div>
+        </div>
+      ) : null}
+    </header>
+  );
+}
+
+function NavbarWithoutAuth() {
+  const [isOpen, setIsOpen] = useState(false);
+
+  return (
+    <header className="sticky top-4 z-30">
+      <div className="relative mx-auto flex h-[72px] w-[90%] max-w-[1800px] items-center rounded-full border border-[var(--border)] bg-[var(--glass-bg)] px-6 shadow-[0_12px_40px_rgba(0,0,0,0.18)] backdrop-blur-[16px]">
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-x-[22%] top-0 h-full rounded-full blur-[36px]"
+          style={{
+            background:
+              "radial-gradient(circle at center, rgba(192,132,87,0.14), transparent 62%)",
+          }}
+        />
+        <div className="flex w-full items-center justify-between gap-4">
+          <Link href="/" className="relative z-10 flex items-center gap-3">
+            <BrandLogo
+              iconClassName="h-9 w-9 rounded-full border border-[var(--border)]"
+              showText={false}
+            />
+            <span className="text-[22px] font-bold tracking-[-0.01em] text-[var(--text-primary)]">
+              HireMe AI ☕
+            </span>
+          </Link>
+
+          <nav className="relative z-10 hidden items-center gap-10 text-[15px] text-[var(--text-secondary)] lg:flex">
+            {navLinks.map((item) => (
+              <Link
+                key={item.href}
+                href={item.href}
+                className="transition hover:text-[var(--accent)]"
+              >
+                {item.label}
+              </Link>
+            ))}
+          </nav>
+
+          <div className="relative z-10 hidden items-center gap-3 md:flex">
+            <ThemeToggle />
+            <Button asChild className="rounded-full px-5">
+              <Link href="/analyze">Get Started</Link>
+            </Button>
+          </div>
+
+          <button
+            type="button"
+            className="relative z-10 flex h-11 w-11 items-center justify-center rounded-full border border-[var(--border)] text-[var(--text-secondary)] md:hidden"
+            aria-label={isOpen ? "Close menu" : "Open menu"}
+            aria-expanded={isOpen}
+            onClick={() => setIsOpen((open) => !open)}
+          >
+            {isOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+          </button>
+        </div>
+      </div>
+
+      {isOpen ? (
+        <div className="mx-auto mt-3 w-[90%] max-w-[1280px] rounded-[28px] border border-[var(--border)] bg-[var(--glass-bg)] p-4 shadow-[var(--card-shadow)] backdrop-blur-[18px] md:hidden">
+          <div className="mb-4 flex justify-end">
+            <ThemeToggle />
+          </div>
+          <nav className="flex flex-col gap-1 text-sm text-[var(--text-secondary)]">
+            {navLinks.map((item) => (
+              <Link
+                key={item.href}
+                href={item.href}
+                className="rounded-2xl px-3 py-3 transition hover:bg-[var(--brand-soft)] hover:text-[var(--text-primary)]"
+                onClick={() => setIsOpen(false)}
+              >
+                {item.label}
+              </Link>
+            ))}
+          </nav>
+
+          <div className="mt-4 flex flex-col gap-3">
+            <Button asChild className="w-full justify-center rounded-full">
+              <Link href="/analyze" onClick={() => setIsOpen(false)}>
+                Get Started
+              </Link>
+            </Button>
           </div>
         </div>
       ) : null}

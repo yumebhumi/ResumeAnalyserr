@@ -8,7 +8,11 @@ import {
   SUPPORTED_RESUME_EXTENSIONS,
   SUPPORTED_RESUME_TYPES,
 } from "@/features/resume/constants";
-import { extractResumeTextWithFallback } from "@/features/resume/parse";
+import {
+  extractResumeTextWithFallback,
+  getUnreadableResumeMessage,
+  MIN_EXTRACTED_RESUME_LENGTH,
+} from "@/features/resume/parse";
 import { saveResumeAnalysis } from "@/features/resume/persist";
 
 const requestSchema = z.object({
@@ -113,30 +117,29 @@ export async function POST(request: Request) {
       }
 
       try {
-        extractedText = await extractResumeTextWithFallback(
+        const extraction = await extractResumeTextWithFallback(
           fileName,
           file.type,
           buffer,
         );
+        extractedText = extraction.text;
         sourceLabel = fileName;
       } catch (error) {
         console.error("Resume extraction failed", error);
 
         return NextResponse.json(
           {
-            error:
-              "This PDF seems image-based or unreadable. Please upload a text-based PDF or DOCX.",
+            error: getUnreadableResumeMessage(),
           },
           { status: 400 },
         );
       }
     }
 
-    if (extractedText.trim().length < 50) {
+    if (extractedText.trim().length < MIN_EXTRACTED_RESUME_LENGTH) {
       return NextResponse.json(
         {
-          error:
-            "This PDF seems image-based or unreadable. Please upload a text-based PDF or DOCX.",
+          error: getUnreadableResumeMessage(),
         },
         { status: 400 },
       );
@@ -212,8 +215,7 @@ export async function POST(request: Request) {
     if (/image-based|unreadable|extract|unsupported|valid pdf|empty|docx/i.test(message)) {
       return NextResponse.json(
         {
-          error:
-            "This PDF seems image-based or unreadable. Please upload a text-based PDF or DOCX.",
+          error: getUnreadableResumeMessage(),
         },
         { status: 400 },
       );
