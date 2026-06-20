@@ -83,6 +83,7 @@ const headerCopy: Array<{
 ];
 
 export function AppShell({ children }: { children: React.ReactNode }) {
+  const authEnabled = Boolean(process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY);
   const pathname = usePathname();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const activeHeader =
@@ -194,7 +195,16 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 <div className="hidden rounded-full border border-[var(--border)] bg-card px-4 py-2 text-sm text-[var(--text-secondary)] sm:inline-flex">
                   Free Plan
                 </div>
-                <UserButton appearance={userButtonAppearance} />
+                {authEnabled ? (
+                  <UserButton appearance={userButtonAppearance} />
+                ) : (
+                  <Link
+                    href="/"
+                    className="inline-flex rounded-full border border-[var(--border)] bg-card px-4 py-2 text-sm text-[var(--text-secondary)]"
+                  >
+                    Home
+                  </Link>
+                )}
               </div>
             </div>
           </header>
