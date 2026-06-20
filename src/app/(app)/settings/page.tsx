@@ -9,35 +9,55 @@ import { ensureAppSchema } from "@/lib/db-schema";
 export default async function SettingsPage() {
   const { userId: clerkUserId } = await auth();
   const clerkProfile = await currentUser();
-  const db = getDb();
+  let user:
+    | {
+        id: string;
+        email: string;
+        plan: string;
+        targetRole: string | null;
+        preferredLocation: string | null;
+        experienceLevel: string | null;
+        linkedinUrl: string | null;
+        portfolioUrl: string | null;
+      }
+    | undefined;
+  let latestGithubProfile: { username: string } | undefined;
+  let analysesCount = 0;
+  let usageCount = 0;
 
-  await ensureAppSchema();
+  if (clerkUserId) {
+    try {
+      const db = getDb();
+      await ensureAppSchema();
 
-  const [user] = clerkUserId
-    ? await db
+      [user] = await db
         .select()
         .from(users)
         .where(eq(users.clerkUserId, clerkUserId))
-        .limit(1)
-    : [];
+        .limit(1);
 
-  const [latestGithubProfile] = user
-    ? await db
-        .select({
-          username: githubProfiles.username,
-        })
-        .from(githubProfiles)
-        .where(eq(githubProfiles.userId, user.id))
-        .orderBy(desc(githubProfiles.analyzedAt))
-        .limit(1)
-    : [];
+      if (user) {
+        [latestGithubProfile] = await db
+          .select({
+            username: githubProfiles.username,
+          })
+          .from(githubProfiles)
+          .where(eq(githubProfiles.userId, user.id))
+          .orderBy(desc(githubProfiles.analyzedAt))
+          .limit(1);
 
-  const analysesCount = user
-    ? await db.$count(resumeAnalyses, eq(resumeAnalyses.userId, user.id))
-    : 0;
-  const usageCount = user
-    ? await db.$count(usageEvents, eq(usageEvents.userId, user.id))
-    : 0;
+        [analysesCount, usageCount] = await Promise.all([
+          db.$count(resumeAnalyses, eq(resumeAnalyses.userId, user.id)),
+          db.$count(usageEvents, eq(usageEvents.userId, user.id)),
+        ]);
+      }
+    } catch (error) {
+      console.error("Settings page failed to load saved data", {
+        error,
+        clerkUserId,
+      });
+    }
+  }
 
   return (
     <SettingsForm

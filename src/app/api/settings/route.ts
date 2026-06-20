@@ -22,46 +22,54 @@ export async function GET() {
     return NextResponse.json({ error: "Unauthorized." }, { status: 401 });
   }
 
-  const db = getDb();
+  try {
+    const db = getDb();
 
-  await ensureUsersTableColumns();
+    await ensureUsersTableColumns();
 
-  const [user] = await db
-    .select({
-      id: users.id,
-      plan: users.plan,
-      targetRole: users.targetRole,
-      preferredLocation: users.preferredLocation,
-      experienceLevel: users.experienceLevel,
-      linkedinUrl: users.linkedinUrl,
-      portfolioUrl: users.portfolioUrl,
-      email: users.email,
-    })
-    .from(users)
-    .where(eq(users.clerkUserId, clerkUserId))
-    .limit(1);
+    const [user] = await db
+      .select({
+        id: users.id,
+        plan: users.plan,
+        targetRole: users.targetRole,
+        preferredLocation: users.preferredLocation,
+        experienceLevel: users.experienceLevel,
+        linkedinUrl: users.linkedinUrl,
+        portfolioUrl: users.portfolioUrl,
+        email: users.email,
+      })
+      .from(users)
+      .where(eq(users.clerkUserId, clerkUserId))
+      .limit(1);
 
-  const latestAnalysis =
-    user?.id
-      ? await db
-          .select({ atsScore: resumeAnalyses.atsScore })
-          .from(resumeAnalyses)
-          .where(eq(resumeAnalyses.userId, user.id))
-          .orderBy(desc(resumeAnalyses.createdAt))
-          .limit(1)
-          .then((rows) => rows[0] ?? null)
-      : null;
+    const latestAnalysis =
+      user?.id
+        ? await db
+            .select({ atsScore: resumeAnalyses.atsScore })
+            .from(resumeAnalyses)
+            .where(eq(resumeAnalyses.userId, user.id))
+            .orderBy(desc(resumeAnalyses.createdAt))
+            .limit(1)
+            .then((rows) => rows[0] ?? null)
+        : null;
 
-  return NextResponse.json({
-    plan: user?.plan === "pro" ? "pro" : "free",
-    targetRole: user?.targetRole ?? "",
-    preferredLocation: user?.preferredLocation ?? "",
-    experienceLevel: user?.experienceLevel ?? "Student",
-    linkedinUrl: user?.linkedinUrl ?? "",
-    portfolioUrl: user?.portfolioUrl ?? "",
-    email: user?.email ?? "",
-    atsScore: latestAnalysis?.atsScore ?? null,
-  });
+    return NextResponse.json({
+      plan: user?.plan === "pro" ? "pro" : "free",
+      targetRole: user?.targetRole ?? "",
+      preferredLocation: user?.preferredLocation ?? "",
+      experienceLevel: user?.experienceLevel ?? "Student",
+      linkedinUrl: user?.linkedinUrl ?? "",
+      portfolioUrl: user?.portfolioUrl ?? "",
+      email: user?.email ?? "",
+      atsScore: latestAnalysis?.atsScore ?? null,
+    });
+  } catch (error) {
+    console.error("Settings GET failed", { error, clerkUserId });
+    return NextResponse.json(
+      { error: "Could not load settings right now." },
+      { status: 500 },
+    );
+  }
 }
 
 export async function POST(request: Request) {
@@ -116,9 +124,14 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    const message =
-      error instanceof Error ? error.message : "Could not save settings.";
+    console.error("Settings POST failed", { error, clerkUserId });
 
-    return NextResponse.json({ error: message }, { status: 400 });
+    const status = error instanceof z.ZodError ? 400 : 500;
+    const message =
+      error instanceof z.ZodError
+        ? "Invalid settings payload."
+        : "Could not save settings.";
+
+    return NextResponse.json({ error: message }, { status });
   }
 }

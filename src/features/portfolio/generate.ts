@@ -24,21 +24,30 @@ export async function generatePortfolioContent(input: {
     .filter(Boolean)
     .join("\n\n");
 
-  const response = await generateGroqCompletion(
-    [
-      {
-        role: "system",
-        content:
-          "You generate recruiter-ready developer portfolio content. Return valid JSON only.",
-      },
-      { role: "user", content: prompt },
-    ],
-    { json: true, temperature: 0.2 },
-  );
+  try {
+    const response = await generateGroqCompletion(
+      [
+        {
+          role: "system",
+          content:
+            "You generate recruiter-ready developer portfolio content. Return valid JSON only.",
+        },
+        { role: "user", content: prompt },
+      ],
+      { json: true, temperature: 0.2 },
+    );
 
-  return generatedPortfolioSchema.parse(
-    normalizeGeneratedPortfolio(JSON.parse(response)),
-  );
+    return generatedPortfolioSchema.parse(
+      normalizeGeneratedPortfolio(JSON.parse(response)),
+    );
+  } catch (error) {
+    console.error("Portfolio AI generation failed, using fallback content.", {
+      error,
+      template: input.template,
+    });
+
+    return buildPortfolioFallback(input.current);
+  }
 }
 
 function normalizeGeneratedPortfolio(value: unknown) {
@@ -56,6 +65,21 @@ function normalizeGeneratedPortfolio(value: unknown) {
     linkedin: asString(source.linkedin),
     email: asString(source.email),
   };
+}
+
+function buildPortfolioFallback(current: PortfolioFormData): GeneratedPortfolio {
+  return generatedPortfolioSchema.parse({
+    name: current.name,
+    role: current.role,
+    about: current.about,
+    skills: current.skills,
+    projects: current.projects,
+    experience: current.experience,
+    education: current.education,
+    github: current.githubLink,
+    linkedin: current.linkedinLink,
+    email: current.email,
+  });
 }
 
 function asString(value: unknown) {

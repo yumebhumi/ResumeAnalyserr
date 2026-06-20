@@ -1,7 +1,7 @@
 import { neon } from "@neondatabase/serverless";
 import { drizzle } from "drizzle-orm/neon-http";
 
-import { getServerEnv } from "@/lib/env";
+import { getDatabaseUrl } from "@/lib/env";
 
 let database: ReturnType<typeof drizzle> | null = null;
 
@@ -10,7 +10,7 @@ export function getDb() {
     return database;
   }
 
-  const sql = neon(getServerEnv().DATABASE_URL);
+  const sql = neon(getDatabaseUrl());
   database = drizzle({ client: sql });
   return database;
 }

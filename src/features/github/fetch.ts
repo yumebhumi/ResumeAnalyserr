@@ -1,4 +1,4 @@
-import { getServerEnv } from "@/lib/env";
+import { getOptionalGithubToken } from "@/lib/env";
 
 type GitHubRepo = {
   name: string;
@@ -149,7 +149,7 @@ async function githubRequest<T>(path: string): Promise<T> {
     "User-Agent": "HireMe-AI",
   };
 
-  const token = getServerEnv().GITHUB_TOKEN;
+  const token = getOptionalGithubToken();
   if (token) {
     headers.Authorization = `Bearer ${token}`;
   }

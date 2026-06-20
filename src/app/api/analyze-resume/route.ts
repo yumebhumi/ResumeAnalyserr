@@ -195,6 +195,13 @@ export async function POST(request: Request) {
   } catch (error) {
     console.error("Resume analysis request failed", error);
 
+    if (isMissingGroqConfiguration(error)) {
+      return NextResponse.json(
+        { error: "Groq API failed while analyzing the resume." },
+        { status: 502 },
+      );
+    }
+
     if (error instanceof z.ZodError) {
       return NextResponse.json(
         { error: "Invalid request payload.", details: error.flatten() },
@@ -230,4 +237,14 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ error: message }, { status: 500 });
   }
+}
+
+function isMissingGroqConfiguration(error: unknown) {
+  if (!(error instanceof z.ZodError)) {
+    return false;
+  }
+
+  return error.issues.some((issue) =>
+    issue.message.toLowerCase().includes("groq_api_key"),
+  );
 }

@@ -1,4 +1,4 @@
-import { getServerEnv } from "@/lib/env";
+import { getGroqApiKey } from "@/lib/env";
 
 const GROQ_API_URL = "https://api.groq.com/openai/v1/chat/completions";
 
@@ -22,7 +22,7 @@ export async function generateGroqCompletion(
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      Authorization: `Bearer ${getServerEnv().GROQ_API_KEY}`,
+      Authorization: `Bearer ${getGroqApiKey()}`,
     },
     body: JSON.stringify({
       model: GROQ_MODEL,

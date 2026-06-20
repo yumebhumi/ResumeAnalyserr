@@ -1,6 +1,6 @@
 import DodoPayments from "dodopayments";
 
-import { getServerEnv } from "@/lib/env";
+import { getDodoEnv, getOptionalAppUrl } from "@/lib/env";
 
 let dodoClient: DodoPayments | null = null;
 
@@ -9,7 +9,7 @@ export function getDodoClient() {
     return dodoClient;
   }
 
-  const env = getServerEnv();
+  const env = getDodoEnv();
 
   if (!env.DODO_PAYMENTS_API_KEY) {
     throw new Error("Dodo Payments API key is not configured.");
@@ -25,6 +25,5 @@ export function getDodoClient() {
 }
 
 export function getAppUrl(requestUrl?: string) {
-  const env = getServerEnv();
-  return env.NEXT_PUBLIC_APP_URL ?? requestUrl ?? "http://localhost:3000";
+  return getOptionalAppUrl() ?? requestUrl ?? "http://localhost:3000";
 }

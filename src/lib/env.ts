@@ -1,102 +1,134 @@
 import { z } from "zod";
 
-const serverEnvSchema = z.object({
-  NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: z.string().min(1),
-  CLERK_SECRET_KEY: z.string().min(1),
-  DATABASE_URL: z.string().url(),
-  GROQ_API_KEY: z.string().min(1),
-  DODO_PAYMENTS_API_KEY: z.preprocess(
-    (value) => {
-      if (typeof value === "string" && value.trim().length === 0) {
+const optionalTrimmedString = z.preprocess(
+  (value) => {
+    if (typeof value === "string") {
+      const trimmed = value.trim();
+      return trimmed.length > 0 ? trimmed : undefined;
+    }
+
+    return value;
+  },
+  z.string().min(1).optional(),
+);
+
+const optionalUrl = z.preprocess(
+  (value) => {
+    if (typeof value === "string") {
+      const trimmed = value.trim();
+      return trimmed.length > 0 ? trimmed : undefined;
+    }
+
+    return value;
+  },
+  z.string().url().optional(),
+);
+
+const dodoEnvironmentSchema = z.preprocess(
+  (value) => {
+    if (typeof value === "string") {
+      const normalized = value.trim();
+
+      if (!normalized) {
         return undefined;
       }
 
-      return value;
-    },
-    z.string().min(1).optional(),
-  ),
-  DODO_PAYMENTS_ENVIRONMENT: z.preprocess(
-    (value) => {
-      if (typeof value === "string" && value.trim().length === 0) {
-        return undefined;
-      }
-
-      if (value === "test") {
+      if (normalized === "test") {
         return "test_mode";
       }
 
-      if (value === "live") {
+      if (normalized === "live") {
         return "live_mode";
       }
 
-      return value;
-    },
-    z.enum(["test_mode", "live_mode"]).optional(),
-  ),
-  DODO_PAYMENTS_WEBHOOK_KEY: z.preprocess(
-    (value) => {
-      if (typeof value === "string" && value.trim().length === 0) {
-        return undefined;
-      }
+      return normalized;
+    }
 
-      return value;
-    },
-    z.string().min(1).optional(),
-  ),
-  DODO_PRO_PRODUCT_ID: z.preprocess(
-    (value) => {
-      if (typeof value === "string" && value.trim().length === 0) {
-        return undefined;
-      }
+    return value;
+  },
+  z.enum(["test_mode", "live_mode"]).optional(),
+);
 
-      return value;
-    },
-    z.string().min(1).optional(),
-  ),
-  NEXT_PUBLIC_APP_URL: z.preprocess(
-    (value) => {
-      if (typeof value === "string" && value.trim().length === 0) {
-        return undefined;
-      }
+type DodoEnv = {
+  DODO_PAYMENTS_API_KEY?: string;
+  DODO_PAYMENTS_ENVIRONMENT?: "test_mode" | "live_mode";
+  DODO_PAYMENTS_WEBHOOK_KEY?: string;
+  DODO_PRO_PRODUCT_ID?: string;
+};
 
-      return value;
-    },
-    z.string().url().optional(),
-  ),
-  GITHUB_TOKEN: z.preprocess(
-    (value) => {
-      if (typeof value === "string" && value.trim().length === 0) {
-        return undefined;
-      }
+let cachedDatabaseUrl: string | null = null;
+let cachedGroqApiKey: string | null = null;
+let cachedOptionalGithubToken: string | null | undefined;
+let cachedAppUrl: string | null | undefined;
+let cachedDodoEnv: DodoEnv | null = null;
 
-      return value;
-    },
-    z.string().min(1).optional(),
-  ),
-});
-
-type ServerEnv = z.infer<typeof serverEnvSchema>;
-
-let cachedServerEnv: ServerEnv | null = null;
-
-export function getServerEnv() {
-  if (cachedServerEnv) {
-    return cachedServerEnv;
+export function getDatabaseUrl() {
+  if (cachedDatabaseUrl) {
+    return cachedDatabaseUrl;
   }
 
-  cachedServerEnv = serverEnvSchema.parse({
-    NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY:
-      process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY,
-    CLERK_SECRET_KEY: process.env.CLERK_SECRET_KEY,
-    DATABASE_URL: process.env.DATABASE_URL,
-    GROQ_API_KEY: process.env.GROQ_API_KEY,
-    DODO_PAYMENTS_API_KEY: process.env.DODO_PAYMENTS_API_KEY,
-    DODO_PAYMENTS_ENVIRONMENT: process.env.DODO_PAYMENTS_ENVIRONMENT,
-    DODO_PAYMENTS_WEBHOOK_KEY: process.env.DODO_PAYMENTS_WEBHOOK_KEY,
-    DODO_PRO_PRODUCT_ID: process.env.DODO_PRO_PRODUCT_ID,
-    NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL,
-    GITHUB_TOKEN: process.env.GITHUB_TOKEN,
-  });
+  const parsed = z
+    .string()
+    .trim()
+    .min(1, "DATABASE_URL is not configured.")
+    .parse(process.env.DATABASE_URL);
 
-  return cachedServerEnv;
+  cachedDatabaseUrl = parsed;
+  return cachedDatabaseUrl;
+}
+
+export function getGroqApiKey() {
+  if (cachedGroqApiKey) {
+    return cachedGroqApiKey;
+  }
+
+  const parsed = z
+    .string()
+    .trim()
+    .min(1, "GROQ_API_KEY is not configured.")
+    .parse(process.env.GROQ_API_KEY);
+
+  cachedGroqApiKey = parsed;
+  return cachedGroqApiKey;
+}
+
+export function getOptionalGithubToken() {
+  if (cachedOptionalGithubToken !== undefined) {
+    return cachedOptionalGithubToken;
+  }
+
+  cachedOptionalGithubToken = optionalTrimmedString.parse(process.env.GITHUB_TOKEN) ?? null;
+  return cachedOptionalGithubToken;
+}
+
+export function getDodoEnv() {
+  if (cachedDodoEnv) {
+    return cachedDodoEnv;
+  }
+
+  cachedDodoEnv = {
+    DODO_PAYMENTS_API_KEY: optionalTrimmedString.parse(
+      process.env.DODO_PAYMENTS_API_KEY,
+    ),
+    DODO_PAYMENTS_ENVIRONMENT: dodoEnvironmentSchema.parse(
+      process.env.DODO_PAYMENTS_ENVIRONMENT,
+    ),
+    DODO_PAYMENTS_WEBHOOK_KEY: optionalTrimmedString.parse(
+      process.env.DODO_PAYMENTS_WEBHOOK_KEY,
+    ),
+    DODO_PRO_PRODUCT_ID: optionalTrimmedString.parse(
+      process.env.DODO_PRO_PRODUCT_ID,
+    ),
+  };
+
+  return cachedDodoEnv;
+}
+
+export function getOptionalAppUrl() {
+  if (cachedAppUrl !== undefined) {
+    return cachedAppUrl;
+  }
+
+  cachedAppUrl = optionalUrl.parse(process.env.NEXT_PUBLIC_APP_URL) ?? null;
+  return cachedAppUrl;
 }

@@ -83,55 +83,80 @@ function extractSuggestions(item: AnalysisSnapshot | null) {
 
 export default async function DashboardPage() {
   const { userId: clerkUserId } = await auth();
-  const db = getDb();
+  let recentAnalyses: Array<{
+    id: string;
+    fileName: string;
+    atsScore: number | null;
+    analysisJson: unknown;
+    createdAt: Date | string | null;
+  }> = [];
+  let githubRows: Array<{
+    id: string;
+    username: string;
+    stats: Record<string, unknown> | null;
+    analyzedAt: Date | string | null;
+  }> = [];
+  let portfolioRows: Array<{
+    id: string;
+    template: string;
+    updatedAt: Date | string | null;
+  }> = [];
 
-  await ensureAppSchema();
+  if (clerkUserId) {
+    try {
+      const db = getDb();
+      await ensureAppSchema();
 
-  const [user] = clerkUserId
-    ? await db
+      const [user] = await db
         .select()
         .from(users)
         .where(eq(users.clerkUserId, clerkUserId))
-        .limit(1)
-    : [];
+        .limit(1);
 
-  const [recentAnalyses, githubRows, portfolioRows] = user
-    ? await Promise.all([
-        db
-          .select({
-            id: resumeAnalyses.id,
-            fileName: resumeAnalyses.fileName,
-            atsScore: resumeAnalyses.atsScore,
-            analysisJson: resumeAnalyses.analysisJson,
-            createdAt: resumeAnalyses.createdAt,
-          })
-          .from(resumeAnalyses)
-          .where(eq(resumeAnalyses.userId, user.id))
-          .orderBy(desc(resumeAnalyses.createdAt))
-          .limit(5),
-        db
-          .select({
-            id: githubProfiles.id,
-            username: githubProfiles.username,
-            stats: githubProfiles.stats,
-            analyzedAt: githubProfiles.analyzedAt,
-          })
-          .from(githubProfiles)
-          .where(eq(githubProfiles.userId, user.id))
-          .orderBy(desc(githubProfiles.analyzedAt))
-          .limit(1),
-        db
-          .select({
-            id: portfolioDrafts.id,
-            template: portfolioDrafts.template,
-            updatedAt: portfolioDrafts.updatedAt,
-          })
-          .from(portfolioDrafts)
-          .where(eq(portfolioDrafts.userId, user.id))
-          .orderBy(desc(portfolioDrafts.updatedAt))
-          .limit(1),
-      ])
-    : [[], [], []];
+      if (user) {
+        [recentAnalyses, githubRows, portfolioRows] = await Promise.all([
+          db
+            .select({
+              id: resumeAnalyses.id,
+              fileName: resumeAnalyses.fileName,
+              atsScore: resumeAnalyses.atsScore,
+              analysisJson: resumeAnalyses.analysisJson,
+              createdAt: resumeAnalyses.createdAt,
+            })
+            .from(resumeAnalyses)
+            .where(eq(resumeAnalyses.userId, user.id))
+            .orderBy(desc(resumeAnalyses.createdAt))
+            .limit(5),
+          db
+            .select({
+              id: githubProfiles.id,
+              username: githubProfiles.username,
+              stats: githubProfiles.stats,
+              analyzedAt: githubProfiles.analyzedAt,
+            })
+            .from(githubProfiles)
+            .where(eq(githubProfiles.userId, user.id))
+            .orderBy(desc(githubProfiles.analyzedAt))
+            .limit(1),
+          db
+            .select({
+              id: portfolioDrafts.id,
+              template: portfolioDrafts.template,
+              updatedAt: portfolioDrafts.updatedAt,
+            })
+            .from(portfolioDrafts)
+            .where(eq(portfolioDrafts.userId, user.id))
+            .orderBy(desc(portfolioDrafts.updatedAt))
+            .limit(1),
+        ]);
+      }
+    } catch (error) {
+      console.error("Dashboard data failed to load", {
+        error,
+        clerkUserId,
+      });
+    }
+  }
 
   const latestAnalysis = recentAnalyses[0] ?? null;
   const latestGithubProfile = githubRows[0];

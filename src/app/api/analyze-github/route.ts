@@ -112,6 +112,13 @@ export async function POST(request: Request) {
       analysis,
     });
   } catch (error) {
+    if (isMissingGroqConfiguration(error)) {
+      return NextResponse.json(
+        { error: "Groq API failed while analyzing the GitHub profile." },
+        { status: 502 },
+      );
+    }
+
     if (error instanceof z.ZodError) {
       return NextResponse.json(
         { error: "Invalid GitHub username." },
@@ -191,4 +198,14 @@ export async function DELETE() {
 
     return NextResponse.json({ error: message }, { status: 500 });
   }
+}
+
+function isMissingGroqConfiguration(error: unknown) {
+  if (!(error instanceof z.ZodError)) {
+    return false;
+  }
+
+  return error.issues.some((issue) =>
+    issue.message.toLowerCase().includes("groq_api_key"),
+  );
 }

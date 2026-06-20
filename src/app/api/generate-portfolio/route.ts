@@ -10,17 +10,33 @@ import { generatedPortfolioSchema } from "@/features/portfolio/schema";
 import { getDb } from "@/lib/db";
 import { ensureAppSchema } from "@/lib/db-schema";
 
+const stringFieldSchema = z.preprocess(
+  (value) => (typeof value === "string" ? value : value == null ? "" : String(value)),
+  z.string().default(""),
+);
+
+const stringArrayFieldSchema = z.preprocess((value) => {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+
+  return value
+    .filter((item): item is string => typeof item === "string")
+    .map((item) => item.trim())
+    .filter(Boolean);
+}, z.array(z.string()).default([]));
+
 const sectionsSchema = z.object({
-  name: z.string().default(""),
-  role: z.string().default(""),
-  about: z.string().default(""),
-  skills: z.array(z.string()).default([]),
-  projects: z.array(z.string()).default([]),
-  experience: z.array(z.string()).default([]),
-  education: z.array(z.string()).default([]),
-  githubLink: z.string().default(""),
-  linkedinLink: z.string().default(""),
-  email: z.string().default(""),
+  name: stringFieldSchema,
+  role: stringFieldSchema,
+  about: stringFieldSchema,
+  skills: stringArrayFieldSchema,
+  projects: stringArrayFieldSchema,
+  experience: stringArrayFieldSchema,
+  education: stringArrayFieldSchema,
+  githubLink: stringFieldSchema,
+  linkedinLink: stringFieldSchema,
+  email: stringFieldSchema,
 });
 
 const nullableUuidSchema = z.preprocess(
@@ -186,7 +202,17 @@ export async function POST(request: Request) {
       saveError,
     });
   } catch (error) {
+    if (isMissingGroqConfiguration(error)) {
+      return NextResponse.json(
+        { error: "Groq API failed while generating portfolio content." },
+        { status: 502 },
+      );
+    }
+
     if (error instanceof z.ZodError) {
+      console.error("Invalid portfolio generation payload", {
+        issues: error.issues,
+      });
       return NextResponse.json({ error: "Invalid request payload." }, { status: 400 });
     }
 
@@ -209,6 +235,16 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ error: message }, { status: 500 });
   }
+}
+
+function isMissingGroqConfiguration(error: unknown) {
+  if (!(error instanceof z.ZodError)) {
+    return false;
+  }
+
+  return error.issues.some((issue) =>
+    issue.message.toLowerCase().includes("groq_api_key"),
+  );
 }
 
 function normalizeString(value: unknown) {
