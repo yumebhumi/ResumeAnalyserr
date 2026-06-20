@@ -61,7 +61,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: message }, { status: 502 });
     }
 
-    if (/GitHub analysis failed|Gemini/i.test(message)) {
+    if (/GitHub analysis failed|Groq/i.test(message)) {
       return NextResponse.json(
         { error: "GitHub analysis failed. Try again." },
         { status: 502 },

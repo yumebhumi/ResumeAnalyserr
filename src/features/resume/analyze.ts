@@ -1,4 +1,4 @@
-import { GEMINI_MODEL, getGeminiClient } from "@/lib/gemini";
+import { generateGroqCompletion } from "@/lib/groq";
 
 import { resumeAnalysisSchema, type ResumeAnalysis } from "./schema";
 
@@ -31,16 +31,19 @@ export async function generateResumeAnalysis(input: {
 
   for (let attempt = 0; attempt < 2; attempt += 1) {
     try {
-      const response = await getGeminiClient().models.generateContent({
-        model: GEMINI_MODEL,
-        contents: prompt,
-        config: {
-          responseMimeType: "application/json",
-          temperature: 0.2,
-        },
-      });
+      const response = await generateGroqCompletion(
+        [
+          {
+            role: "system",
+            content:
+              "You are an ATS and recruiter reviewer for technical resumes. Return valid JSON only.",
+          },
+          { role: "user", content: prompt },
+        ],
+        { json: true, temperature: 0.2 },
+      );
 
-      const payload = JSON.parse(response.text ?? "{}");
+      const payload = JSON.parse(response);
       return resumeAnalysisSchema.parse(payload);
     } catch (error) {
       lastError = error;
@@ -49,5 +52,5 @@ export async function generateResumeAnalysis(input: {
 
   throw lastError instanceof Error
     ? lastError
-    : new Error("Gemini analysis failed.");
+    : new Error("Groq analysis failed.");
 }

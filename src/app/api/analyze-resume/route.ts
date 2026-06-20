@@ -124,9 +124,9 @@ export async function POST(request: Request) {
     const message =
       error instanceof Error ? error.message : "Resume analysis failed.";
 
-    if (/gemini/i.test(message)) {
+    if (/groq/i.test(message)) {
       return NextResponse.json(
-        { error: "Gemini API failed while analyzing the resume." },
+        { error: "Groq API failed while analyzing the resume." },
         { status: 502 },
       );
     }

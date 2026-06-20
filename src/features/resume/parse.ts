@@ -1,14 +1,12 @@
 import mammoth from "mammoth";
 
-import { GEMINI_MODEL, getGeminiClient } from "@/lib/gemini";
-
 export async function extractResumeText(
   fileName: string,
   fileType: string,
   buffer: Buffer,
 ) {
   if (fileType === "application/pdf" || fileName.toLowerCase().endsWith(".pdf")) {
-    return extractPdfTextWithGemini(buffer);
+    return extractPdfText(buffer);
   }
 
   if (
@@ -39,46 +37,24 @@ function normalizeResumeText(rawText: string) {
     .trim();
 }
 
-async function extractPdfTextWithGemini(buffer: Buffer) {
-  const pdfBytes = new Uint8Array(buffer);
-  const uploadedFile = await getGeminiClient().files.upload({
-    file: new Blob([pdfBytes], { type: "application/pdf" }),
-    config: {
-      mimeType: "application/pdf",
-    },
-  });
-  const uploadedFileUri = uploadedFile.uri;
+async function extractPdfText(buffer: Buffer) {
+  const { PDFParse } = await import("pdf-parse");
+  const parser = new PDFParse({ data: buffer });
 
   try {
-    if (!uploadedFileUri) {
-      throw new Error("Gemini file upload did not return a PDF URI.");
+    const result = await parser.getText();
+    const normalized = normalizeResumeText(result.text ?? "");
+
+    if (normalized.length >= 80) {
+      return normalized;
     }
 
-    const response = await getGeminiClient().models.generateContent({
-      model: GEMINI_MODEL,
-      contents: [
-        {
-          text:
-            "Extract the readable resume text from this PDF. Return plain text only. Preserve headings, bullets, and section order where possible.",
-        },
-        {
-          fileData: {
-            fileUri: uploadedFileUri,
-            mimeType: uploadedFile.mimeType ?? "application/pdf",
-          },
-        },
-      ],
-      config: {
-        temperature: 0,
-      },
-    });
+    if (normalized.length > 0) {
+      return normalized;
+    }
 
-    return normalizeResumeText(response.text ?? "");
+    throw new Error("Could not extract readable text from the uploaded PDF.");
   } finally {
-    if (uploadedFile.name) {
-      await getGeminiClient().files
-        .delete({ name: uploadedFile.name })
-        .catch(() => undefined);
-    }
+    await parser.destroy().catch(() => undefined);
   }
 }

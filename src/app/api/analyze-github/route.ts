@@ -3,7 +3,7 @@ import { and, desc, eq, gte } from "drizzle-orm";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
-import { githubProfiles, users } from "@/db/schema";
+import { githubAnalyses, githubProfiles, users } from "@/db/schema";
 import { generateGithubAnalysis } from "@/features/github/analyze";
 import { fetchGitHubAnalysisInput } from "@/features/github/fetch";
 import { saveGithubAnalysis } from "@/features/github/persist";
@@ -133,12 +133,61 @@ export async function POST(request: Request) {
       );
     }
 
-    if (/GitHub analysis failed|Gemini/i.test(message)) {
+    if (/GitHub analysis failed|Groq/i.test(message)) {
       return NextResponse.json(
-        { error: "Gemini API failed while analyzing the GitHub profile." },
+        { error: "Groq API failed while analyzing the GitHub profile." },
         { status: 502 },
       );
     }
+
+    return NextResponse.json({ error: message }, { status: 500 });
+  }
+}
+
+export async function DELETE() {
+  const { userId: clerkUserId } = await auth();
+
+  if (!clerkUserId) {
+    return NextResponse.json({ error: "Unauthorized." }, { status: 401 });
+  }
+
+  try {
+    const db = getDb();
+
+    await ensureAppSchema();
+
+    const [user] = await db
+      .select({ id: users.id })
+      .from(users)
+      .where(eq(users.clerkUserId, clerkUserId))
+      .limit(1);
+
+    if (!user) {
+      return NextResponse.json({
+        success: true,
+        deletedProfiles: 0,
+        deletedAnalyses: 0,
+      });
+    }
+
+    const deletedAnalyses = await db
+      .delete(githubAnalyses)
+      .where(eq(githubAnalyses.userId, user.id))
+      .returning({ id: githubAnalyses.id });
+
+    const deletedProfiles = await db
+      .delete(githubProfiles)
+      .where(eq(githubProfiles.userId, user.id))
+      .returning({ id: githubProfiles.id });
+
+    return NextResponse.json({
+      success: true,
+      deletedProfiles: deletedProfiles.length,
+      deletedAnalyses: deletedAnalyses.length,
+    });
+  } catch (error) {
+    const message =
+      error instanceof Error ? error.message : "Could not reset GitHub analysis.";
 
     return NextResponse.json({ error: message }, { status: 500 });
   }

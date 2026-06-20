@@ -1,5 +1,6 @@
 "use client";
 
+import { AnimatePresence, motion } from "framer-motion";
 import { useEffect, useState } from "react";
 import {
   AlertCircle,
@@ -14,6 +15,7 @@ import {
   Sparkles,
   Star,
   TrendingUp,
+  Trash2,
 } from "lucide-react";
 
 import type { AnalyzeGithubResponse } from "./schema";
@@ -29,6 +31,9 @@ const loadingSteps = [
   "Preparing recruiter-facing insights",
 ];
 
+type DashboardState = "idle" | "loading" | "ready";
+type AnalysisStatus = "idle" | "loading" | "complete";
+
 export function GithubAnalyzer({
   initialUsername,
   initialModel,
@@ -37,9 +42,53 @@ export function GithubAnalyzer({
   initialModel: GitHubViewModel | null;
 }) {
   const [username, setUsername] = useState(initialUsername);
-  const [model, setModel] = useState<GitHubViewModel | null>(initialModel);
+  const [githubProfile, setGithubProfile] = useState<GitHubViewModel | null>(
+    initialModel,
+  );
+  const [githubRepos, setGithubRepos] = useState<
+    GitHubViewModel["topProjects"]
+  >(initialModel?.topProjects ?? []);
+  const [githubStats, setGithubStats] = useState<{
+    repositories: number;
+    stars: number;
+    languagesCount: number;
+    commitActivity: string;
+    health: GitHubViewModel["health"];
+  } | null>(
+    initialModel
+      ? {
+          repositories: initialModel.repositories,
+          stars: initialModel.stars,
+          languagesCount: initialModel.languagesCount,
+          commitActivity: initialModel.commitActivity,
+          health: initialModel.health,
+        }
+      : null,
+  );
+  const [githubLanguages, setGithubLanguages] = useState<string[]>(
+    initialModel?.languages ?? [],
+  );
+  const [githubScore, setGithubScore] = useState<number | null>(
+    initialModel?.portfolioReadyScore ?? null,
+  );
+  const [githubInsights, setGithubInsights] = useState<string[]>(
+    initialModel?.insights ?? [],
+  );
+  const [githubRecommendations, setGithubRecommendations] = useState<string[]>(
+    initialModel?.insights ?? [],
+  );
+  const [chartsData, setChartsData] = useState<GitHubViewModel["health"] | null>(
+    initialModel?.health ?? null,
+  );
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [dashboardState, setDashboardState] = useState<DashboardState>(
+    initialModel ? "ready" : "idle",
+  );
+  const [analysisStatus, setAnalysisStatus] = useState<AnalysisStatus>(
+    initialModel ? "complete" : "idle",
+  );
+  const [isResetModalOpen, setIsResetModalOpen] = useState(false);
   const [stepIndex, setStepIndex] = useState(0);
 
   useEffect(() => {
@@ -66,6 +115,8 @@ export function GithubAnalyzer({
 
     setStepIndex(0);
     setIsSubmitting(true);
+    setAnalysisStatus("loading");
+    setDashboardState("loading");
     setError(null);
 
     try {
@@ -105,8 +156,29 @@ export function GithubAnalyzer({
         throw new Error("GitHub analysis returned an invalid response.");
       }
 
-      setModel(buildGitHubViewModelFromResponse(payload as AnalyzeGithubResponse));
+      const nextModel = buildGitHubViewModelFromResponse(
+        payload as AnalyzeGithubResponse,
+      );
+
+      setGithubProfile(nextModel);
+      setGithubRepos(nextModel.topProjects);
+      setGithubStats({
+        repositories: nextModel.repositories,
+        stars: nextModel.stars,
+        languagesCount: nextModel.languagesCount,
+        commitActivity: nextModel.commitActivity,
+        health: nextModel.health,
+      });
+      setGithubLanguages(nextModel.languages);
+      setGithubScore(nextModel.portfolioReadyScore);
+      setGithubInsights(nextModel.insights);
+      setGithubRecommendations(nextModel.insights);
+      setChartsData(nextModel.health);
+      setDashboardState("ready");
+      setAnalysisStatus("complete");
     } catch (submissionError) {
+      setDashboardState("idle");
+      setAnalysisStatus("idle");
       setError(
         submissionError instanceof Error
           ? submissionError.message
@@ -117,7 +189,34 @@ export function GithubAnalyzer({
     }
   }
 
-  const scoreMeta = model ? getScoreMeta(model.portfolioReadyScore) : null;
+  const resetGithubAnalysis = () => {
+    setUsername("");
+    setGithubProfile(null);
+    setGithubRepos([]);
+    setGithubStats(null);
+    setGithubLanguages([]);
+    setGithubScore(null);
+    setGithubInsights([]);
+    setGithubRecommendations([]);
+    setChartsData(null);
+    setDashboardState("idle");
+    setAnalysisStatus("idle");
+    setIsSubmitting(false);
+    setError(null);
+    setStepIndex(0);
+    setIsResetModalOpen(false);
+  };
+
+  function handleResetRequest() {
+    if (!githubProfile) {
+      return;
+    }
+
+    setIsResetModalOpen(true);
+  }
+
+  const hasAnalysis = dashboardState === "ready" && githubProfile && githubStats;
+  const scoreMeta = githubScore !== null ? getScoreMeta(githubScore) : null;
 
   return (
     <div className="space-y-6 pb-8">
@@ -157,8 +256,19 @@ export function GithubAnalyzer({
                 ) : (
                   <ArrowRight className="h-4 w-4" />
                 )}
-                Analyze GitHub
+                {hasAnalysis ? "Analyze Again" : "Analyze GitHub"}
               </button>
+              {hasAnalysis ? (
+                <button
+                  type="button"
+                  onClick={handleResetRequest}
+                  disabled={isSubmitting}
+                  className="inline-flex h-14 items-center justify-center gap-2 rounded-[14px] border border-[rgba(192,132,87,0.3)] bg-[#221e1d] px-6 text-sm font-medium text-[#FAF3E0] transition hover:border-[#C08457] hover:text-white disabled:cursor-not-allowed disabled:opacity-70"
+                >
+                  <Trash2 className="h-4 w-4" />
+                  Reset Analysis
+                </button>
+              ) : null}
             </form>
 
             {error ? (
@@ -172,250 +282,390 @@ export function GithubAnalyzer({
           </div>
 
           <div className="rounded-[24px] border border-[rgba(250,243,224,0.08)] bg-[#221e1d] p-6">
-            {isSubmitting ? (
-              <div className="space-y-4">
-                <div className="flex items-center gap-3">
-                  <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[rgba(192,132,87,0.14)] text-[#D6AD60]">
-                    <LoaderCircle className="h-5 w-5 animate-spin" />
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium text-white">
-                      Analyzing @{username.trim()}
-                    </p>
-                    <p className="text-sm text-[#D6D3D1]">
-                      Fetching repository signals and preparing recommendations.
-                    </p>
-                  </div>
-                </div>
-                <div className="space-y-3">
-                  {loadingSteps.map((step, index) => {
-                    const isComplete = index < stepIndex;
-                    const isActive = index === stepIndex;
-
-                    return (
-                      <div
-                        key={step}
-                        className="flex items-center gap-3 rounded-[18px] border border-[rgba(250,243,224,0.08)] bg-[#292524] px-4 py-3"
-                      >
-                        {isComplete ? (
-                          <CheckCircle2 className="h-4 w-4 text-[#D6AD60]" />
-                        ) : isActive ? (
-                          <LoaderCircle className="h-4 w-4 animate-spin text-[#C08457]" />
-                        ) : (
-                          <div className="h-4 w-4 rounded-full border border-[rgba(250,243,224,0.14)]" />
-                        )}
-                        <span className="text-sm text-[#D6D3D1]">{step}</span>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            ) : model && scoreMeta ? (
-              <div className="space-y-5">
-                <div className="flex items-start justify-between gap-4">
-                  <div>
-                    <p className="text-sm text-[#D6D3D1]">{model.sourceLabel}</p>
-                    <h2 className="mt-2 text-2xl font-semibold text-white">
-                      @{model.username}
-                    </h2>
-                  </div>
-                  <div
-                    className={`rounded-full border px-3 py-1.5 text-xs font-medium ${scoreMeta.badgeClassName}`}
-                  >
-                    {scoreMeta.label}
-                  </div>
-                </div>
-
-                <div className="rounded-[22px] border border-[rgba(250,243,224,0.08)] bg-[#292524] p-5">
-                  <div className="flex items-end justify-between gap-4">
+            <AnimatePresence mode="wait">
+              {isSubmitting ? (
+                <motion.div
+                  key="loading-preview"
+                  initial={{ opacity: 0, y: 16 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -16 }}
+                  transition={{ duration: 0.24, ease: "easeOut" }}
+                  className="space-y-4"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[rgba(192,132,87,0.14)] text-[#D6AD60]">
+                      <LoaderCircle className="h-5 w-5 animate-spin" />
+                    </div>
                     <div>
-                      <p className="text-xs uppercase tracking-[0.2em] text-[#D6AD60]">
-                        Portfolio Ready Score
+                      <p className="text-sm font-medium text-white">
+                        Analyzing @{username.trim()}
                       </p>
-                      <p className="mt-3 text-5xl font-semibold text-[#FAF3E0]">
-                        {model.portfolioReadyScore}
+                      <p className="text-sm text-[#D6D3D1]">
+                        Fetching repository signals and preparing recommendations.
                       </p>
                     </div>
-                    <TrendingUp className="h-7 w-7 text-[#C08457]" />
                   </div>
-                  <div className="mt-4 h-3 overflow-hidden rounded-full bg-[rgba(250,243,224,0.08)]">
+                  <div className="space-y-3">
+                    {loadingSteps.map((step, index) => {
+                      const isComplete = index < stepIndex;
+                      const isActive = index === stepIndex;
+
+                      return (
+                        <div
+                          key={step}
+                          className="flex items-center gap-3 rounded-[18px] border border-[rgba(250,243,224,0.08)] bg-[#292524] px-4 py-3"
+                        >
+                          {isComplete ? (
+                            <CheckCircle2 className="h-4 w-4 text-[#D6AD60]" />
+                          ) : isActive ? (
+                            <LoaderCircle className="h-4 w-4 animate-spin text-[#C08457]" />
+                          ) : (
+                            <div className="h-4 w-4 rounded-full border border-[rgba(250,243,224,0.14)]" />
+                          )}
+                          <span className="text-sm text-[#D6D3D1]">{step}</span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </motion.div>
+              ) : hasAnalysis && githubProfile && githubStats && scoreMeta && githubScore !== null ? (
+                <motion.div
+                  key="analysis-preview"
+                  initial={{ opacity: 0, y: 16 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -16 }}
+                  transition={{ duration: 0.28, ease: "easeOut" }}
+                  className="space-y-5"
+                >
+                  <div className="flex items-start justify-between gap-4">
+                    <div>
+                      <p className="text-sm text-[#D6D3D1]">{githubProfile.sourceLabel}</p>
+                      <h2 className="mt-2 text-2xl font-semibold text-white">
+                        @{githubProfile.username}
+                      </h2>
+                    </div>
                     <div
-                      className={`h-full rounded-full ${scoreMeta.barClassName}`}
-                      style={{ width: `${model.portfolioReadyScore}%` }}
+                      className={`rounded-full border px-3 py-1.5 text-xs font-medium ${scoreMeta.badgeClassName}`}
+                    >
+                      {scoreMeta.label}
+                    </div>
+                  </div>
+
+                  <div className="rounded-[22px] border border-[rgba(250,243,224,0.08)] bg-[#292524] p-5">
+                    <div className="flex items-end justify-between gap-4">
+                      <div>
+                        <p className="text-xs uppercase tracking-[0.2em] text-[#D6AD60]">
+                          Portfolio Ready Score
+                        </p>
+                        <p className="mt-3 text-5xl font-semibold text-[#FAF3E0]">
+                          {githubScore}
+                        </p>
+                      </div>
+                      <TrendingUp className="h-7 w-7 text-[#C08457]" />
+                    </div>
+                    <div className="mt-4 h-3 overflow-hidden rounded-full bg-[rgba(250,243,224,0.08)]">
+                      <div
+                        className={`h-full rounded-full ${scoreMeta.barClassName}`}
+                        style={{ width: `${githubScore}%` }}
+                      />
+                    </div>
+                    <p className="mt-4 text-sm leading-7 text-[#D6D3D1]">
+                      {scoreMeta.description}
+                    </p>
+                  </div>
+
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    <SignalChip
+                      icon={Flame}
+                      label="Activity"
+                      value={githubStats.commitActivity}
+                    />
+                    <SignalChip
+                      icon={Code2}
+                      label="Visible stack"
+                      value={`${githubStats.languagesCount} languages`}
                     />
                   </div>
-                  <p className="mt-4 text-sm leading-7 text-[#D6D3D1]">
-                    {scoreMeta.description}
-                  </p>
-                </div>
-
-                <div className="grid gap-3 sm:grid-cols-2">
-                  <SignalChip
-                    icon={Flame}
-                    label="Activity"
-                    value={model.commitActivity}
-                  />
-                  <SignalChip
-                    icon={Code2}
-                    label="Visible stack"
-                    value={`${model.languagesCount} languages`}
-                  />
-                </div>
-              </div>
-            ) : (
-              <div className="flex min-h-[280px] items-center justify-center rounded-[18px] border border-dashed border-[rgba(250,243,224,0.08)] text-sm text-[#D6D3D1]">
-                Analyze a GitHub username to generate a clearer project-quality report.
-              </div>
-            )}
+                </motion.div>
+              ) : (
+                <motion.div
+                  key="idle-preview"
+                  initial={{ opacity: 0, y: 16 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -16 }}
+                  transition={{ duration: 0.24, ease: "easeOut" }}
+                  className="flex min-h-[280px] items-center justify-center rounded-[18px] border border-dashed border-[rgba(250,243,224,0.08)] text-sm text-[#D6D3D1]"
+                >
+                  Analyze a GitHub username to generate a clearer project-quality report.
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
         </div>
       </section>
 
-      {model ? (
-        <>
-          <section className="grid gap-5 sm:grid-cols-2 xl:grid-cols-4">
-            {[
-              { label: "Repositories", value: `${model.repositories}`, icon: GitBranch },
-              { label: "Stars", value: `${model.stars}`, icon: Star },
-              { label: "Languages", value: `${model.languagesCount}`, icon: Code2 },
-              { label: "Commit Activity", value: model.commitActivity, icon: Clock3 },
-            ].map(({ label, value, icon: Icon }) => (
-              <div
-                key={label}
-                className="rounded-[24px] border border-[rgba(250,243,224,0.08)] bg-[#292524] p-5 shadow-[0_16px_40px_rgba(0,0,0,0.18)]"
-              >
-                <div className="flex items-start justify-between gap-4">
-                  <div>
-                    <p className="text-sm text-[#D6D3D1]">{label}</p>
-                    <p className="mt-3 text-3xl font-semibold text-[#FAF3E0]">{value}</p>
-                  </div>
-                  <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[rgba(192,132,87,0.12)] text-[#C08457]">
-                    <Icon className="h-5 w-5" />
+      <AnimatePresence mode="wait">
+        {hasAnalysis && githubProfile && githubStats ? (
+          <motion.div
+            key="analysis-results"
+            initial={{ opacity: 0, y: 18 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -18 }}
+            transition={{ duration: 0.3, ease: "easeOut" }}
+            className="space-y-6"
+          >
+            <section className="grid gap-5 sm:grid-cols-2 xl:grid-cols-4">
+              {[
+                { label: "Repositories", value: `${githubStats.repositories}`, icon: GitBranch },
+                { label: "Stars", value: `${githubStats.stars}`, icon: Star },
+                { label: "Languages", value: `${githubStats.languagesCount}`, icon: Code2 },
+                { label: "Commit Activity", value: githubStats.commitActivity, icon: Clock3 },
+              ].map(({ label, value, icon: Icon }) => (
+                <div
+                  key={label}
+                  className="rounded-[24px] border border-[rgba(250,243,224,0.08)] bg-[#292524] p-5 shadow-[0_16px_40px_rgba(0,0,0,0.18)]"
+                >
+                  <div className="flex items-start justify-between gap-4">
+                    <div>
+                      <p className="text-sm text-[#D6D3D1]">{label}</p>
+                      <p className="mt-3 text-3xl font-semibold text-[#FAF3E0]">{value}</p>
+                    </div>
+                    <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[rgba(192,132,87,0.12)] text-[#C08457]">
+                      <Icon className="h-5 w-5" />
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
-          </section>
+              ))}
+            </section>
 
-          <section className="grid gap-6 xl:grid-cols-[1.1fr_0.9fr]">
-            <section className="rounded-[24px] border border-[rgba(250,243,224,0.08)] bg-[#292524] p-6 shadow-[0_16px_40px_rgba(0,0,0,0.18)]">
-              <h2 className="text-lg font-semibold text-white">Top Projects</h2>
-              <p className="mt-1 text-sm text-[#D6D3D1]">
-                These repositories contribute the strongest recruiter-facing signal.
-              </p>
-              <div className="mt-5 space-y-3">
-                {model.topProjects.length > 0 ? (
-                  model.topProjects.map((project) => (
-                    <div
-                      key={project.name}
-                      className="rounded-[20px] border border-[rgba(250,243,224,0.08)] bg-[#221e1d] p-4"
-                    >
-                      <div className="flex items-start justify-between gap-4">
-                        <div className="space-y-2">
-                          <p className="text-base font-medium text-white">{project.name}</p>
-                          <p className="text-sm leading-7 text-[#D6D3D1]">
-                            {project.description}
-                          </p>
+            <section className="grid gap-6 xl:grid-cols-[1.1fr_0.9fr]">
+              <section className="rounded-[24px] border border-[rgba(250,243,224,0.08)] bg-[#292524] p-6 shadow-[0_16px_40px_rgba(0,0,0,0.18)]">
+                <h2 className="text-lg font-semibold text-white">Top Projects</h2>
+                <p className="mt-1 text-sm text-[#D6D3D1]">
+                  These repositories contribute the strongest recruiter-facing signal.
+                </p>
+                <div className="mt-5 space-y-3">
+                  {githubRepos.length > 0 ? (
+                    githubRepos.map((project) => (
+                      <div
+                        key={project.name}
+                        className="rounded-[20px] border border-[rgba(250,243,224,0.08)] bg-[#221e1d] p-4"
+                      >
+                        <div className="flex items-start justify-between gap-4">
+                          <div className="space-y-2">
+                            <p className="text-base font-medium text-white">{project.name}</p>
+                            <p className="text-sm leading-7 text-[#D6D3D1]">
+                              {project.description}
+                            </p>
+                          </div>
+                          <div className="rounded-full bg-[rgba(214,173,96,0.14)] px-3 py-1 text-xs font-medium text-[#D6AD60]">
+                            {project.portfolioScore}/100
+                          </div>
                         </div>
-                        <div className="rounded-full bg-[rgba(214,173,96,0.14)] px-3 py-1 text-xs font-medium text-[#D6AD60]">
-                          {project.portfolioScore}/100
-                        </div>
-                      </div>
-                      <div className="mt-4 flex flex-wrap items-center gap-2">
-                        <span className="inline-flex items-center gap-1 rounded-full border border-[rgba(250,243,224,0.08)] px-2.5 py-1 text-xs text-[#FAF3E0]">
-                          <Star className="h-3 w-3 text-[#D6AD60]" />
-                          {project.stars}
-                        </span>
-                        {project.techStack.map((item) => (
-                          <span
-                            key={item}
-                            className="rounded-full bg-[rgba(192,132,87,0.12)] px-2.5 py-1 text-xs text-[#FAF3E0]"
-                          >
-                            {item}
+                        <div className="mt-4 flex flex-wrap items-center gap-2">
+                          <span className="inline-flex items-center gap-1 rounded-full border border-[rgba(250,243,224,0.08)] px-2.5 py-1 text-xs text-[#FAF3E0]">
+                            <Star className="h-3 w-3 text-[#D6AD60]" />
+                            {project.stars}
                           </span>
-                        ))}
+                          {project.techStack.map((item) => (
+                            <span
+                              key={item}
+                              className="rounded-full bg-[rgba(192,132,87,0.12)] px-2.5 py-1 text-xs text-[#FAF3E0]"
+                            >
+                              {item}
+                            </span>
+                          ))}
+                        </div>
                       </div>
+                    ))
+                  ) : (
+                    <div className="rounded-[20px] border border-dashed border-[rgba(250,243,224,0.08)] bg-[#221e1d] p-4 text-sm text-[#D6D3D1]">
+                      No standout public repositories were found yet.
                     </div>
-                  ))
-                ) : (
-                  <div className="rounded-[20px] border border-dashed border-[rgba(250,243,224,0.08)] bg-[#221e1d] p-4 text-sm text-[#D6D3D1]">
-                    No standout public repositories were found yet.
+                  )}
+                </div>
+              </section>
+
+              <div className="space-y-6">
+                <section className="rounded-[24px] border border-[rgba(250,243,224,0.08)] bg-[#292524] p-6 shadow-[0_16px_40px_rgba(0,0,0,0.18)]">
+                  <h2 className="text-lg font-semibold text-white">AI Insights</h2>
+                  <p className="mt-1 text-sm text-[#D6D3D1]">
+                    Quick recruiter-facing takeaways from the current profile.
+                  </p>
+                  <div className="mt-5 space-y-3">
+                    {githubInsights.map((insight, index) => (
+                      <div
+                        key={`${insight}-${index}`}
+                        className="rounded-[18px] bg-[#221e1d] px-4 py-3.5 text-sm leading-7 text-[#D6D3D1]"
+                      >
+                        {insight}
+                      </div>
+                    ))}
                   </div>
-                )}
+                </section>
+
+                <section className="rounded-[24px] border border-[rgba(250,243,224,0.08)] bg-[#292524] p-6 shadow-[0_16px_40px_rgba(0,0,0,0.18)]">
+                  <h2 className="text-lg font-semibold text-white">Health Breakdown</h2>
+                  <p className="mt-1 text-sm text-[#D6D3D1]">
+                    A clearer view of consistency, documentation, and project quality.
+                  </p>
+                  <div className="mt-5 space-y-4">
+                    {(chartsData ?? []).map((item) => (
+                      <div key={item.label}>
+                        <div className="flex items-center justify-between gap-3">
+                          <p className="text-sm text-[#D6D3D1]">{item.label}</p>
+                          <p className="text-sm font-medium text-[#FAF3E0]">{item.value}%</p>
+                        </div>
+                        <div className="mt-3 h-2 rounded-full bg-[rgba(250,243,224,0.08)]">
+                          <div
+                            className="h-2 rounded-full bg-[linear-gradient(90deg,#8B5E3C,#C08457,#D6AD60)]"
+                            style={{ width: `${item.value}%` }}
+                          />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </section>
+
+                <section className="rounded-[24px] border border-[rgba(250,243,224,0.08)] bg-[#292524] p-6 shadow-[0_16px_40px_rgba(0,0,0,0.18)]">
+                  <h2 className="text-lg font-semibold text-white">Priority Fixes</h2>
+                  <p className="mt-1 text-sm text-[#D6D3D1]">
+                    Work on these next to improve how your profile reads to recruiters.
+                  </p>
+                  <div className="mt-5 space-y-3">
+                    {githubRecommendations.map((insight, index) => (
+                      <div
+                        key={insight}
+                        className="flex items-start gap-3 rounded-[18px] bg-[#221e1d] px-4 py-3.5"
+                      >
+                        <div className="mt-0.5 flex h-7 min-w-7 items-center justify-center rounded-full bg-[rgba(192,132,87,0.12)] text-xs font-medium text-[#D6AD60]">
+                          {index + 1}
+                        </div>
+                        <p className="flex-1 text-sm leading-7 text-[#D6D3D1]">{insight}</p>
+                        <CheckCircle2 className="mt-1 h-4 w-4 text-[#D6AD60]" />
+                      </div>
+                    ))}
+                  </div>
+                </section>
               </div>
             </section>
 
-            <div className="space-y-6">
-              <section className="rounded-[24px] border border-[rgba(250,243,224,0.08)] bg-[#292524] p-6 shadow-[0_16px_40px_rgba(0,0,0,0.18)]">
-                <h2 className="text-lg font-semibold text-white">Health Breakdown</h2>
-                <p className="mt-1 text-sm text-[#D6D3D1]">
-                  A clearer view of consistency, documentation, and project quality.
-                </p>
-                <div className="mt-5 space-y-4">
-                  {model.health.map((item) => (
-                    <div key={item.label}>
-                      <div className="flex items-center justify-between gap-3">
-                        <p className="text-sm text-[#D6D3D1]">{item.label}</p>
-                        <p className="text-sm font-medium text-[#FAF3E0]">{item.value}%</p>
-                      </div>
-                      <div className="mt-3 h-2 rounded-full bg-[rgba(250,243,224,0.08)]">
-                        <div
-                          className="h-2 rounded-full bg-[linear-gradient(90deg,#8B5E3C,#C08457,#D6AD60)]"
-                          style={{ width: `${item.value}%` }}
-                        />
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </section>
-
-              <section className="rounded-[24px] border border-[rgba(250,243,224,0.08)] bg-[#292524] p-6 shadow-[0_16px_40px_rgba(0,0,0,0.18)]">
-                <h2 className="text-lg font-semibold text-white">Priority Fixes</h2>
-                <p className="mt-1 text-sm text-[#D6D3D1]">
-                  Work on these next to improve how your profile reads to recruiters.
-                </p>
-                <div className="mt-5 space-y-3">
-                  {model.insights.map((insight, index) => (
-                    <div
-                      key={insight}
-                      className="flex items-start gap-3 rounded-[18px] bg-[#221e1d] px-4 py-3.5"
+            <section className="rounded-[24px] border border-[rgba(250,243,224,0.08)] bg-[#292524] p-6 shadow-[0_16px_40px_rgba(0,0,0,0.18)]">
+              <h2 className="text-lg font-semibold text-white">Top Languages</h2>
+              <p className="mt-1 text-sm text-[#D6D3D1]">
+                The stack areas currently most visible on this profile.
+              </p>
+              <div className="mt-5 flex flex-wrap gap-2">
+                {githubLanguages.length > 0 ? (
+                  githubLanguages.map((language) => (
+                    <span
+                      key={language}
+                      className="rounded-full bg-[rgba(192,132,87,0.12)] px-3 py-1.5 text-sm text-[#FAF3E0]"
                     >
-                      <div className="mt-0.5 flex h-7 min-w-7 items-center justify-center rounded-full bg-[rgba(192,132,87,0.12)] text-xs font-medium text-[#D6AD60]">
-                        {index + 1}
-                      </div>
-                      <p className="flex-1 text-sm leading-7 text-[#D6D3D1]">{insight}</p>
-                      <CheckCircle2 className="mt-1 h-4 w-4 text-[#D6AD60]" />
-                    </div>
-                  ))}
-                </div>
-              </section>
-            </div>
-          </section>
-
-          <section className="rounded-[24px] border border-[rgba(250,243,224,0.08)] bg-[#292524] p-6 shadow-[0_16px_40px_rgba(0,0,0,0.18)]">
-            <h2 className="text-lg font-semibold text-white">Top Languages</h2>
-            <p className="mt-1 text-sm text-[#D6D3D1]">
-              The stack areas currently most visible on this profile.
-            </p>
-            <div className="mt-5 flex flex-wrap gap-2">
-              {model.languages.length > 0 ? (
-                model.languages.map((language) => (
-                  <span
-                    key={language}
-                    className="rounded-full bg-[rgba(192,132,87,0.12)] px-3 py-1.5 text-sm text-[#FAF3E0]"
-                  >
-                    {language}
+                      {language}
+                    </span>
+                  ))
+                ) : (
+                  <span className="text-sm text-[#D6D3D1]">
+                    No clear language signal detected yet.
                   </span>
-                ))
-              ) : (
-                <span className="text-sm text-[#D6D3D1]">
-                  No clear language signal detected yet.
-                </span>
-              )}
+                )}
+              </div>
+            </section>
+          </motion.div>
+        ) : (
+          <motion.section
+            key="idle-dashboard"
+            initial={{ opacity: 0, y: 18 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -18 }}
+            transition={{ duration: 0.28, ease: "easeOut" }}
+            className="rounded-[24px] border border-[rgba(250,243,224,0.08)] bg-[#292524] p-6 shadow-[0_16px_40px_rgba(0,0,0,0.18)]"
+          >
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <h2 className="text-lg font-semibold text-white">Dashboard Reset</h2>
+                <p className="mt-1 text-sm text-[#D6D3D1]">
+                  The analyzer is back to its default state. Enter another GitHub username to start a fresh review.
+                </p>
+              </div>
+              <div className="rounded-full border border-[rgba(250,243,224,0.08)] bg-[#221e1d] px-4 py-2 text-sm text-[#FAF3E0]">
+                Status: {analysisStatus}
+              </div>
             </div>
-          </section>
-        </>
-      ) : null}
+
+            <div className="mt-5 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+              {[
+                { label: "Repositories", value: "0" },
+                { label: "Stars", value: "0" },
+                { label: "Languages", value: "0" },
+                { label: "Commit Activity", value: "Idle" },
+              ].map((item) => (
+                <div
+                  key={item.label}
+                  className="rounded-[20px] border border-dashed border-[rgba(250,243,224,0.08)] bg-[#221e1d] px-4 py-4"
+                >
+                  <p className="text-sm text-[#D6D3D1]">{item.label}</p>
+                  <p className="mt-2 text-2xl font-semibold text-[#FAF3E0]">{item.value}</p>
+                </div>
+              ))}
+            </div>
+          </motion.section>
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {isResetModalOpen ? (
+          <motion.div
+            key="reset-modal"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-[rgba(15,10,9,0.72)] px-4"
+          >
+            <motion.div
+              initial={{ opacity: 0, y: 16, scale: 0.98 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: 8, scale: 0.98 }}
+              transition={{ duration: 0.22, ease: "easeOut" }}
+              className="w-full max-w-md rounded-[24px] border border-[rgba(250,243,224,0.08)] bg-[#292524] p-6 shadow-[0_24px_60px_rgba(0,0,0,0.4)]"
+            >
+              <div className="flex items-start gap-3">
+                <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[rgba(192,132,87,0.14)] text-[#D6AD60]">
+                  <Trash2 className="h-5 w-5" />
+                </div>
+                <div>
+                  <h2 className="text-lg font-semibold text-white">
+                    Are you sure you want to reset this analysis?
+                  </h2>
+                  <p className="mt-2 text-sm leading-7 text-[#D6D3D1]">
+                    This will clear the current GitHub username, scorecards, charts,
+                    insights, and recommendations from the analyzer without refreshing
+                    the page.
+                  </p>
+                </div>
+              </div>
+
+              <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:justify-end">
+                <button
+                  type="button"
+                  onClick={() => setIsResetModalOpen(false)}
+                  className="inline-flex h-12 items-center justify-center rounded-[14px] border border-[rgba(250,243,224,0.08)] bg-[#221e1d] px-5 text-sm font-medium text-[#FAF3E0] transition hover:border-[#C08457]"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={resetGithubAnalysis}
+                  className="inline-flex h-12 items-center justify-center rounded-[14px] bg-[#C08457] px-5 text-sm font-medium text-white transition hover:bg-[#D6AD60]"
+                >
+                  Reset
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        ) : null}
+      </AnimatePresence>
     </div>
   );
 }

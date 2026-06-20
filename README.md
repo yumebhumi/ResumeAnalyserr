@@ -6,7 +6,7 @@ HireMe AI is an AI-powered career workspace for resume analysis, GitHub profile 
 
 The app is built around a practical job-search workflow:
 - upload a resume
-- analyze ATS readiness with Gemini
+- analyze ATS readiness with Groq
 - review GitHub quality and portfolio readiness
 - generate and save portfolio drafts
 - manage plans and upgrade through Dodo Payments
@@ -19,7 +19,7 @@ The app is built around a practical job-search workflow:
 - Clerk authentication
 - Neon Postgres
 - Drizzle ORM
-- Gemini API
+- Groq API
 - Framer Motion
 - Dodo Payments
 
@@ -69,7 +69,7 @@ NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=
 CLERK_SECRET_KEY=
 
 DATABASE_URL=
-GEMINI_API_KEY=
+GROQ_API_KEY=
 GITHUB_TOKEN=
 
 DODO_PAYMENTS_API_KEY=
@@ -129,7 +129,7 @@ npm run db:studio
 1. Clerk auth check
 2. file validation
 3. PDF or DOCX text extraction
-4. Gemini ATS analysis
+4. Groq ATS analysis
 5. database persistence
 6. response back to the frontend
 
@@ -154,7 +154,7 @@ The analysis response includes:
 1. Clerk auth check
 2. GitHub username validation
 3. public GitHub API fetch
-4. Gemini developer-profile analysis
+4. Groq developer-profile analysis
 5. database persistence
 
 Returned data includes:
@@ -171,7 +171,7 @@ Returned data includes:
 
 1. Clerk auth check
 2. load latest or selected resume analysis
-3. generate structured portfolio content with Gemini
+3. generate structured portfolio content with Groq
 4. save draft to `portfolio_drafts`
 5. return generated content for preview
 

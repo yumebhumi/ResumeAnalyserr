@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
 import { AlertTriangle, Trash2 } from "lucide-react";
@@ -112,12 +111,14 @@ export function SettingsForm({
 
         <div className="mt-5 flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-4">
-            <Image
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
               src={profile.avatarUrl}
               alt={profile.name}
               width={56}
               height={56}
               className="h-14 w-14 rounded-full border border-[rgba(250,243,224,0.08)] object-cover"
+              referrerPolicy="no-referrer"
             />
             <div>
               <p className="font-medium text-white">{profile.name}</p>

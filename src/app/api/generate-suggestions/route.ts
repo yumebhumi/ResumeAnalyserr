@@ -92,9 +92,9 @@ export async function POST(request: Request) {
     const message =
       error instanceof Error ? error.message : "Could not generate suggestions.";
 
-    if (/Gemini/i.test(message)) {
+    if (/Groq/i.test(message)) {
       return NextResponse.json(
-        { error: "Gemini API failed while generating suggestions." },
+        { error: "Groq API failed while generating suggestions." },
         { status: 502 },
       );
     }

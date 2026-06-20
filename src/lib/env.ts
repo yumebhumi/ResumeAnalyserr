@@ -4,7 +4,7 @@ const serverEnvSchema = z.object({
   NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: z.string().min(1),
   CLERK_SECRET_KEY: z.string().min(1),
   DATABASE_URL: z.string().url(),
-  GEMINI_API_KEY: z.string().min(1),
+  GROQ_API_KEY: z.string().min(1),
   DODO_PAYMENTS_API_KEY: z.preprocess(
     (value) => {
       if (typeof value === "string" && value.trim().length === 0) {
@@ -89,7 +89,7 @@ export function getServerEnv() {
       process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY,
     CLERK_SECRET_KEY: process.env.CLERK_SECRET_KEY,
     DATABASE_URL: process.env.DATABASE_URL,
-    GEMINI_API_KEY: process.env.GEMINI_API_KEY,
+    GROQ_API_KEY: process.env.GROQ_API_KEY,
     DODO_PAYMENTS_API_KEY: process.env.DODO_PAYMENTS_API_KEY,
     DODO_PAYMENTS_ENVIRONMENT: process.env.DODO_PAYMENTS_ENVIRONMENT,
     DODO_PAYMENTS_WEBHOOK_KEY: process.env.DODO_PAYMENTS_WEBHOOK_KEY,

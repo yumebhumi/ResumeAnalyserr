@@ -1,5 +1,6 @@
 "use client";
 
+import { AnimatePresence, motion } from "framer-motion";
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
@@ -15,6 +16,7 @@ import {
   Lock,
   Mail,
   Sparkles,
+  Trash2,
 } from "lucide-react";
 
 import { cn } from "@/lib/utils";
@@ -53,6 +55,7 @@ export function PortfolioBuilder({
   const [form, setForm] = useState<PortfolioFormData>(initialData.data);
   const [isGenerating, setIsGenerating] = useState(false);
   const [toast, setToast] = useState<ToastState>(null);
+  const [isResetModalOpen, setIsResetModalOpen] = useState(false);
 
   const isFreePlan = initialData.plan !== "pro";
 
@@ -183,6 +186,40 @@ export function PortfolioBuilder({
       type: "error",
       message: `${label} is available on the Pro plan.`,
     });
+  }
+
+  const hasPortfolioState = Boolean(
+    draftId ||
+      form.name ||
+      form.role ||
+      form.about ||
+      form.skills.length ||
+      form.projects.length ||
+      form.experience.length ||
+      form.education.length ||
+      form.githubLink ||
+      form.linkedinLink ||
+      form.email,
+  );
+
+  function resetPortfolioBuilder() {
+    setDraftId(null);
+    setTemplate(initialData.template);
+    setForm({
+      name: "",
+      role: "",
+      about: "",
+      skills: [],
+      projects: [],
+      experience: [],
+      education: [],
+      githubLink: "",
+      linkedinLink: "",
+      email: "",
+    });
+    setIsGenerating(false);
+    setToast(null);
+    setIsResetModalOpen(false);
   }
 
   return (
@@ -396,6 +433,18 @@ export function PortfolioBuilder({
                 {isGenerating ? "Generating..." : "Generate Portfolio"}
               </button>
 
+              {hasPortfolioState ? (
+                <button
+                  type="button"
+                  onClick={() => setIsResetModalOpen(true)}
+                  disabled={isGenerating}
+                  className="inline-flex items-center gap-2 rounded-full border border-[rgba(250,243,224,0.12)] px-5 py-3 text-sm font-medium text-[#FAF3E0] transition hover:border-[#C08457] disabled:cursor-not-allowed disabled:opacity-70"
+                >
+                  <Trash2 className="h-4 w-4" />
+                  Reset Portfolio
+                </button>
+              ) : null}
+
               <button
                 type="button"
                 onClick={() => showLockedToast("Export Code")}
@@ -423,98 +472,160 @@ export function PortfolioBuilder({
           </section>
         </div>
 
-        <section className="rounded-[28px] border border-[rgba(250,243,224,0.08)] bg-[#292524] p-6 shadow-[0_16px_40px_rgba(0,0,0,0.22)]">
-          <div className="h-1 rounded-full bg-[linear-gradient(90deg,#8B5E3C,#C08457,#FAF3E0)]" />
-          <div className="mt-6 rounded-[24px] border border-[rgba(250,243,224,0.08)] bg-[#221e1d] p-6">
-            <div className="flex items-start justify-between gap-4">
-              <div>
-                <p className="text-2xl font-semibold tracking-tight text-white">
-                  {form.name || "Your Name"}
+        <AnimatePresence mode="wait">
+          <motion.section
+            key={hasPortfolioState ? "portfolio-preview-ready" : "portfolio-preview-idle"}
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -16 }}
+            transition={{ duration: 0.28, ease: "easeOut" }}
+            className="rounded-[28px] border border-[rgba(250,243,224,0.08)] bg-[#292524] p-6 shadow-[0_16px_40px_rgba(0,0,0,0.22)]"
+          >
+            <div className="h-1 rounded-full bg-[linear-gradient(90deg,#8B5E3C,#C08457,#FAF3E0)]" />
+            <div className="mt-6 rounded-[24px] border border-[rgba(250,243,224,0.08)] bg-[#221e1d] p-6">
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <p className="text-2xl font-semibold tracking-tight text-white">
+                    {form.name || "Your Name"}
+                  </p>
+                  <p className="mt-2 text-sm text-[#D6AD60]">
+                    {form.role || "Your target role"}
+                  </p>
+                </div>
+                <div className="inline-flex items-center gap-2 rounded-full border border-[rgba(250,243,224,0.08)] bg-[rgba(192,132,87,0.08)] px-3 py-1.5 text-xs text-[#FAF3E0]">
+                  <Crown className="h-3.5 w-3.5 text-[#D6AD60]" />
+                  {template.charAt(0).toUpperCase() + template.slice(1)} template
+                </div>
+              </div>
+
+              <div className="mt-6">
+                <p className="text-xs uppercase tracking-[0.2em] text-[#D6AD60]">
+                  About
                 </p>
-                <p className="mt-2 text-sm text-[#D6AD60]">
-                  {form.role || "Your target role"}
+                <p className="mt-3 text-sm leading-7 text-[#D6D3D1]">
+                  {form.about ||
+                    "A concise recruiter-facing summary will appear here once you generate your portfolio."}
                 </p>
               </div>
-              <div className="inline-flex items-center gap-2 rounded-full border border-[rgba(250,243,224,0.08)] bg-[rgba(192,132,87,0.08)] px-3 py-1.5 text-xs text-[#FAF3E0]">
-                <Crown className="h-3.5 w-3.5 text-[#D6AD60]" />
-                {template.charAt(0).toUpperCase() + template.slice(1)} template
-              </div>
-            </div>
 
-            <div className="mt-6">
-              <p className="text-xs uppercase tracking-[0.2em] text-[#D6AD60]">
-                About
-              </p>
-              <p className="mt-3 text-sm leading-7 text-[#D6D3D1]">
-                {form.about ||
-                  "A concise recruiter-facing summary will appear here once you generate your portfolio."}
-              </p>
-            </div>
-
-            <div className="mt-6">
-              <p className="text-xs uppercase tracking-[0.2em] text-[#D6AD60]">
-                Skills
-              </p>
-              <div className="mt-3 flex flex-wrap gap-2">
-                {previewSkills.length > 0 ? (
-                  previewSkills.map((skill) => (
-                    <span
-                      key={skill}
-                      className="rounded-full border border-[rgba(250,243,224,0.08)] bg-[#292524] px-3 py-1.5 text-xs text-[#FAF3E0]"
-                    >
-                      {skill}
+              <div className="mt-6">
+                <p className="text-xs uppercase tracking-[0.2em] text-[#D6AD60]">
+                  Skills
+                </p>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {previewSkills.length > 0 ? (
+                    previewSkills.map((skill) => (
+                      <span
+                        key={skill}
+                        className="rounded-full border border-[rgba(250,243,224,0.08)] bg-[#292524] px-3 py-1.5 text-xs text-[#FAF3E0]"
+                      >
+                        {skill}
+                      </span>
+                    ))
+                  ) : (
+                    <span className="text-sm text-[#D6D3D1]">
+                      Skills will appear here.
                     </span>
-                  ))
-                ) : (
-                  <span className="text-sm text-[#D6D3D1]">
-                    Skills will appear here.
-                  </span>
-                )}
+                  )}
+                </div>
               </div>
-            </div>
 
-            <div className="mt-6">
-              <p className="text-xs uppercase tracking-[0.2em] text-[#D6AD60]">
-                Projects
-              </p>
-              <div className="mt-3 space-y-3">
-                {previewProjects.length > 0 ? (
-                  previewProjects.map((project, index) => (
-                    <div
-                      key={`${project}-${index}`}
-                      className="rounded-[18px] border border-[rgba(250,243,224,0.08)] bg-[#292524] p-4"
-                    >
-                      <p className="text-sm leading-7 text-[#D6D3D1]">{project}</p>
+              <div className="mt-6">
+                <p className="text-xs uppercase tracking-[0.2em] text-[#D6AD60]">
+                  Projects
+                </p>
+                <div className="mt-3 space-y-3">
+                  {previewProjects.length > 0 ? (
+                    previewProjects.map((project, index) => (
+                      <div
+                        key={`${project}-${index}`}
+                        className="rounded-[18px] border border-[rgba(250,243,224,0.08)] bg-[#292524] p-4"
+                      >
+                        <p className="text-sm leading-7 text-[#D6D3D1]">{project}</p>
+                      </div>
+                    ))
+                  ) : (
+                    <div className="rounded-[18px] border border-[rgba(250,243,224,0.08)] bg-[#292524] p-4 text-sm text-[#D6D3D1]">
+                      Project highlights will appear here.
                     </div>
-                  ))
-                ) : (
-                  <div className="rounded-[18px] border border-[rgba(250,243,224,0.08)] bg-[#292524] p-4 text-sm text-[#D6D3D1]">
-                    Project highlights will appear here.
-                  </div>
-                )}
+                  )}
+                </div>
+              </div>
+
+              <div className="mt-6 flex flex-wrap gap-3 text-sm">
+                <PreviewLink
+                  href={form.githubLink}
+                  label="GitHub"
+                  icon={<GitBranch className="h-4 w-4" />}
+                />
+                <PreviewLink
+                  href={form.linkedinLink}
+                  label="LinkedIn"
+                  icon={<Link2 className="h-4 w-4" />}
+                />
+                <PreviewLink
+                  href={form.email ? `mailto:${form.email}` : ""}
+                  label="Email"
+                  icon={<Mail className="h-4 w-4" />}
+                />
               </div>
             </div>
-
-            <div className="mt-6 flex flex-wrap gap-3 text-sm">
-              <PreviewLink
-                href={form.githubLink}
-                label="GitHub"
-                icon={<GitBranch className="h-4 w-4" />}
-              />
-              <PreviewLink
-                href={form.linkedinLink}
-                label="LinkedIn"
-                icon={<Link2 className="h-4 w-4" />}
-              />
-              <PreviewLink
-                href={form.email ? `mailto:${form.email}` : ""}
-                label="Email"
-                icon={<Mail className="h-4 w-4" />}
-              />
-            </div>
-          </div>
-        </section>
+          </motion.section>
+        </AnimatePresence>
       </div>
+
+      <AnimatePresence>
+        {isResetModalOpen ? (
+          <motion.div
+            key="portfolio-reset-modal"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-[rgba(15,10,9,0.72)] px-4"
+          >
+            <motion.div
+              initial={{ opacity: 0, y: 16, scale: 0.98 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: 8, scale: 0.98 }}
+              transition={{ duration: 0.22, ease: "easeOut" }}
+              className="w-full max-w-md rounded-[24px] border border-[rgba(250,243,224,0.08)] bg-[#292524] p-6 shadow-[0_24px_60px_rgba(0,0,0,0.4)]"
+            >
+              <div className="flex items-start gap-3">
+                <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[rgba(192,132,87,0.14)] text-[#D6AD60]">
+                  <Trash2 className="h-5 w-5" />
+                </div>
+                <div>
+                  <h2 className="text-lg font-semibold text-white">
+                    Are you sure you want to reset this analysis?
+                  </h2>
+                  <p className="mt-2 text-sm leading-7 text-[#D6D3D1]">
+                    This will clear the current portfolio form, generated preview,
+                    draft id in local state, and status messages without refreshing
+                    the page.
+                  </p>
+                </div>
+              </div>
+
+              <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:justify-end">
+                <button
+                  type="button"
+                  onClick={() => setIsResetModalOpen(false)}
+                  className="inline-flex h-12 items-center justify-center rounded-[14px] border border-[rgba(250,243,224,0.08)] bg-[#221e1d] px-5 text-sm font-medium text-[#FAF3E0] transition hover:border-[#C08457]"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={resetPortfolioBuilder}
+                  className="inline-flex h-12 items-center justify-center rounded-[14px] bg-[#C08457] px-5 text-sm font-medium text-white transition hover:bg-[#D6AD60]"
+                >
+                  Reset
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        ) : null}
+      </AnimatePresence>
     </div>
   );
 }

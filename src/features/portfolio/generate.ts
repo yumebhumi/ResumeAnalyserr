@@ -1,4 +1,4 @@
-import { GEMINI_MODEL, getGeminiClient } from "@/lib/gemini";
+import { generateGroqCompletion } from "@/lib/groq";
 
 import { generatedPortfolioSchema, type GeneratedPortfolio } from "./schema";
 import type { PortfolioFormData, PortfolioTemplate } from "./types";
@@ -24,14 +24,62 @@ export async function generatePortfolioContent(input: {
     .filter(Boolean)
     .join("\n\n");
 
-  const response = await getGeminiClient().models.generateContent({
-    model: GEMINI_MODEL,
-    contents: prompt,
-    config: {
-      responseMimeType: "application/json",
-      temperature: 0.2,
-    },
-  });
+  const response = await generateGroqCompletion(
+    [
+      {
+        role: "system",
+        content:
+          "You generate recruiter-ready developer portfolio content. Return valid JSON only.",
+      },
+      { role: "user", content: prompt },
+    ],
+    { json: true, temperature: 0.2 },
+  );
 
-  return generatedPortfolioSchema.parse(JSON.parse(response.text ?? "{}"));
+  return generatedPortfolioSchema.parse(
+    normalizeGeneratedPortfolio(JSON.parse(response)),
+  );
+}
+
+function normalizeGeneratedPortfolio(value: unknown) {
+  const source = isRecord(value) ? value : {};
+
+  return {
+    name: asString(source.name),
+    role: asString(source.role),
+    about: asString(source.about),
+    skills: asStringArray(source.skills),
+    projects: asStringArray(source.projects),
+    experience: asStringArray(source.experience),
+    education: asStringArray(source.education),
+    github: asString(source.github),
+    linkedin: asString(source.linkedin),
+    email: asString(source.email),
+  };
+}
+
+function asString(value: unknown) {
+  return typeof value === "string" ? value.trim() : "";
+}
+
+function asStringArray(value: unknown) {
+  if (Array.isArray(value)) {
+    return value
+      .filter((item): item is string => typeof item === "string")
+      .map((item) => item.trim())
+      .filter(Boolean);
+  }
+
+  if (typeof value === "string") {
+    return value
+      .split(/\n|[,|]/)
+      .map((item) => item.trim())
+      .filter(Boolean);
+  }
+
+  return [];
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null;
 }

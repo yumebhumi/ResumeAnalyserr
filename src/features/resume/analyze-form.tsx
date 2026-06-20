@@ -1,5 +1,6 @@
 "use client";
 
+import { AnimatePresence, motion } from "framer-motion";
 import { useEffect, useMemo, useState } from "react";
 import {
   AlertCircle,
@@ -9,6 +10,7 @@ import {
   LoaderCircle,
   Sparkles,
   Target,
+  Trash2,
   Upload,
 } from "lucide-react";
 
@@ -38,7 +40,9 @@ export function AnalyzeForm() {
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<AnalyzeResumeResponse | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isResetModalOpen, setIsResetModalOpen] = useState(false);
   const [stepIndex, setStepIndex] = useState(0);
+  const [fileInputKey, setFileInputKey] = useState(0);
 
   useEffect(() => {
     if (!isSubmitting) {
@@ -129,6 +133,19 @@ export function AnalyzeForm() {
     }
   }
 
+  const hasResumeState = Boolean(file || result || targetRole.trim() || error);
+
+  function resetResumeAnalysis() {
+    setTargetRole("");
+    setFile(null);
+    setError(null);
+    setResult(null);
+    setIsSubmitting(false);
+    setStepIndex(0);
+    setFileInputKey((current) => current + 1);
+    setIsResetModalOpen(false);
+  }
+
   return (
     <div className="space-y-6">
       <form onSubmit={handleSubmit} className="space-y-5">
@@ -165,6 +182,7 @@ export function AnalyzeForm() {
               </div>
 
               <input
+                key={fileInputKey}
                 type="file"
                 accept=".pdf,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
                 onChange={(event) => setFile(event.target.files?.[0] ?? null)}
@@ -176,47 +194,70 @@ export function AnalyzeForm() {
           </label>
         </div>
 
-        <button
-          type="submit"
-          disabled={isSubmitting}
-          className="inline-flex items-center gap-2 rounded-full bg-[#C08457] px-5 py-3 text-sm font-medium text-white transition hover:bg-[#D6AD60] disabled:cursor-not-allowed disabled:opacity-70"
-        >
-          {isSubmitting ? (
-            <LoaderCircle className="h-4 w-4 animate-spin" />
-          ) : (
-            <Sparkles className="h-4 w-4" />
-          )}
-          Analyze resume
-        </button>
+        <div className="flex flex-wrap gap-3">
+          <button
+            type="submit"
+            disabled={isSubmitting}
+            className="inline-flex items-center gap-2 rounded-full bg-[#C08457] px-5 py-3 text-sm font-medium text-white transition hover:bg-[#D6AD60] disabled:cursor-not-allowed disabled:opacity-70"
+          >
+            {isSubmitting ? (
+              <LoaderCircle className="h-4 w-4 animate-spin" />
+            ) : (
+              <Sparkles className="h-4 w-4" />
+            )}
+            {result ? "Analyze Again" : "Analyze resume"}
+          </button>
+
+          {hasResumeState ? (
+            <button
+              type="button"
+              onClick={() => setIsResetModalOpen(true)}
+              disabled={isSubmitting}
+              className="inline-flex items-center gap-2 rounded-full border border-[rgba(250,243,224,0.12)] px-5 py-3 text-sm font-medium text-[#FAF3E0] transition hover:border-[#C08457] disabled:cursor-not-allowed disabled:opacity-70"
+            >
+              <Trash2 className="h-4 w-4" />
+              Reset Analysis
+            </button>
+          ) : null}
+        </div>
       </form>
 
-      {isSubmitting ? (
-        <div className="rounded-[24px] border border-[rgba(250,243,224,0.08)] bg-[#221e1d] p-5">
-          <p className="text-sm font-medium text-white">Analysis in progress</p>
-          <div className="mt-4 space-y-3">
-            {loadingSteps.map((step, index) => {
-              const isComplete = index < stepIndex;
-              const isActive = index === stepIndex;
+      <AnimatePresence mode="wait">
+        {isSubmitting ? (
+          <motion.div
+            key="resume-loading"
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -16 }}
+            transition={{ duration: 0.24, ease: "easeOut" }}
+            className="rounded-[24px] border border-[rgba(250,243,224,0.08)] bg-[#221e1d] p-5"
+          >
+            <p className="text-sm font-medium text-white">Analysis in progress</p>
+            <div className="mt-4 space-y-3">
+              {loadingSteps.map((step, index) => {
+                const isComplete = index < stepIndex;
+                const isActive = index === stepIndex;
 
-              return (
-                <div
-                  key={step}
-                  className="flex items-center gap-3 rounded-[18px] border border-[rgba(250,243,224,0.08)] bg-[#292524] px-4 py-3"
-                >
-                  {isComplete ? (
-                    <CheckCircle2 className="h-4 w-4 text-[#D6AD60]" />
-                  ) : isActive ? (
-                    <LoaderCircle className="h-4 w-4 animate-spin text-[#C08457]" />
-                  ) : (
-                    <div className="h-4 w-4 rounded-full border border-[rgba(250,243,224,0.12)]" />
-                  )}
-                  <span className="text-sm text-[#D6D3D1]">{step}</span>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      ) : null}
+                return (
+                  <div
+                    key={step}
+                    className="flex items-center gap-3 rounded-[18px] border border-[rgba(250,243,224,0.08)] bg-[#292524] px-4 py-3"
+                  >
+                    {isComplete ? (
+                      <CheckCircle2 className="h-4 w-4 text-[#D6AD60]" />
+                    ) : isActive ? (
+                      <LoaderCircle className="h-4 w-4 animate-spin text-[#C08457]" />
+                    ) : (
+                      <div className="h-4 w-4 rounded-full border border-[rgba(250,243,224,0.12)]" />
+                    )}
+                    <span className="text-sm text-[#D6D3D1]">{step}</span>
+                  </div>
+                );
+              })}
+            </div>
+          </motion.div>
+        ) : null}
+      </AnimatePresence>
 
       {error ? (
         <div className="rounded-[20px] border border-[rgba(192,132,87,0.22)] bg-[rgba(192,132,87,0.08)] px-4 py-3 text-sm text-[#FAF3E0]">
@@ -227,8 +268,16 @@ export function AnalyzeForm() {
         </div>
       ) : null}
 
-      {result ? (
-        <div className="space-y-5">
+      <AnimatePresence mode="wait">
+        {result ? (
+          <motion.div
+            key="resume-results"
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -16 }}
+            transition={{ duration: 0.28, ease: "easeOut" }}
+            className="space-y-5"
+          >
           <div className="grid gap-5 xl:grid-cols-[0.95fr_1.05fr]">
             <div className="rounded-[24px] border border-[rgba(250,243,224,0.08)] bg-[#221e1d] p-6 text-white">
               <div className="flex items-start justify-between gap-4">
@@ -360,8 +409,72 @@ export function AnalyzeForm() {
           <p className="font-mono text-xs text-[#D6D3D1]">
             analysisId: {result.analysisId}
           </p>
-        </div>
-      ) : null}
+          </motion.div>
+        ) : hasResumeState && !error ? (
+          <motion.div
+            key="resume-idle"
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -16 }}
+            transition={{ duration: 0.24, ease: "easeOut" }}
+            className="rounded-[24px] border border-dashed border-[rgba(250,243,224,0.08)] bg-[#221e1d] px-5 py-6 text-sm text-[#D6D3D1]"
+          >
+            Resume analysis has been reset. Upload another file to start fresh.
+          </motion.div>
+        ) : null}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {isResetModalOpen ? (
+          <motion.div
+            key="resume-reset-modal"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-[rgba(15,10,9,0.72)] px-4"
+          >
+            <motion.div
+              initial={{ opacity: 0, y: 16, scale: 0.98 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: 8, scale: 0.98 }}
+              transition={{ duration: 0.22, ease: "easeOut" }}
+              className="w-full max-w-md rounded-[24px] border border-[rgba(250,243,224,0.08)] bg-[#292524] p-6 shadow-[0_24px_60px_rgba(0,0,0,0.4)]"
+            >
+              <div className="flex items-start gap-3">
+                <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[rgba(192,132,87,0.14)] text-[#D6AD60]">
+                  <Trash2 className="h-5 w-5" />
+                </div>
+                <div>
+                  <h2 className="text-lg font-semibold text-white">
+                    Are you sure you want to reset this analysis?
+                  </h2>
+                  <p className="mt-2 text-sm leading-7 text-[#D6D3D1]">
+                    This will clear the selected resume, target role, ATS results,
+                    scorecards, and AI suggestions without refreshing the page.
+                  </p>
+                </div>
+              </div>
+
+              <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:justify-end">
+                <button
+                  type="button"
+                  onClick={() => setIsResetModalOpen(false)}
+                  className="inline-flex h-12 items-center justify-center rounded-[14px] border border-[rgba(250,243,224,0.08)] bg-[#221e1d] px-5 text-sm font-medium text-[#FAF3E0] transition hover:border-[#C08457]"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={resetResumeAnalysis}
+                  className="inline-flex h-12 items-center justify-center rounded-[14px] bg-[#C08457] px-5 text-sm font-medium text-white transition hover:bg-[#D6AD60]"
+                >
+                  Reset
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        ) : null}
+      </AnimatePresence>
     </div>
   );
 }

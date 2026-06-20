@@ -23,9 +23,29 @@ const sectionsSchema = z.object({
   email: z.string().default(""),
 });
 
+const nullableUuidSchema = z.preprocess(
+  (value) => {
+    if (typeof value !== "string") {
+      return value ?? null;
+    }
+
+    const trimmed = value.trim();
+    if (!trimmed) {
+      return null;
+    }
+
+    return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
+      trimmed,
+    )
+      ? trimmed
+      : null;
+  },
+  z.string().uuid().nullable(),
+);
+
 const requestSchema = z.object({
-  draftId: z.string().uuid().optional().nullable(),
-  resumeAnalysisId: z.string().uuid().optional().nullable(),
+  draftId: nullableUuidSchema.optional().default(null),
+  resumeAnalysisId: nullableUuidSchema.optional().default(null),
   template: z.enum(["minimal", "developer", "creative", "premium"]),
   sections: sectionsSchema,
 });
@@ -38,7 +58,8 @@ export async function POST(request: Request) {
   }
 
   try {
-    const body = requestSchema.parse(await request.json());
+    const rawBody = await request.json();
+    const body = requestSchema.parse(rawBody);
     const db = getDb();
     await ensureAppSchema();
     const [user] = await db
@@ -127,9 +148,9 @@ export async function POST(request: Request) {
     const message =
       error instanceof Error ? error.message : "Could not generate portfolio.";
 
-    if (/Gemini/i.test(message)) {
+    if (/Groq/i.test(message)) {
       return NextResponse.json(
-        { error: "Gemini API failed while generating portfolio content." },
+        { error: "Groq API failed while generating portfolio content." },
         { status: 502 },
       );
     }
