@@ -4,7 +4,7 @@ export const MIN_EXTRACTED_RESUME_LENGTH = 50;
 
 export type ResumeExtractionResult = {
   text: string;
-  method: "pdf-parse" | "pdfjs-dist" | "mammoth";
+  method: "pdf-parse" | "pdfjs-dist" | "pdf-raw" | "mammoth";
   fileKind: "pdf" | "docx";
 };
 
@@ -92,6 +92,17 @@ async function extractPdfTextWithFallback(
     };
   } catch (error) {
     extractionErrors.push({ method: "pdfjs-dist", error });
+  }
+
+  try {
+    const text = extractPdfTextFromRawContent(buffer);
+    return {
+      text,
+      method: "pdf-raw",
+      fileKind: "pdf",
+    };
+  } catch (error) {
+    extractionErrors.push({ method: "pdf-raw", error });
   }
 
   console.error("Resume PDF extraction failed across all methods", extractionErrors);
@@ -187,6 +198,35 @@ async function extractDocxText(buffer: Buffer) {
   throw new Error(
     `mammoth extracted only ${normalized.length} characters from the DOCX.`,
   );
+}
+
+function extractPdfTextFromRawContent(buffer: Buffer) {
+  const source = buffer.toString("latin1");
+  const matches = [...source.matchAll(/\(([^()]*)\)\s*Tj/g)];
+
+  const extracted = matches
+    .map((match) => decodePdfString(match[1] ?? ""))
+    .join(" ")
+    .replace(/\s+/g, " ");
+
+  const normalized = normalizeResumeText(extracted);
+  if (normalized.length >= MIN_EXTRACTED_RESUME_LENGTH) {
+    return normalized;
+  }
+
+  throw new Error(
+    `raw PDF content extraction found only ${normalized.length} characters.`,
+  );
+}
+
+function decodePdfString(value: string) {
+  return value
+    .replace(/\\\(/g, "(")
+    .replace(/\\\)/g, ")")
+    .replace(/\\\\/g, "\\")
+    .replace(/\\n/g, "\n")
+    .replace(/\\r/g, "\r")
+    .replace(/\\t/g, "\t");
 }
 
 function isUsableBinaryObject(value: unknown): value is Buffer {
