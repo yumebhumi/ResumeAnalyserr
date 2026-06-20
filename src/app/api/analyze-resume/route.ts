@@ -18,6 +18,11 @@ const requestSchema = z.object({
     .max(120)
     .optional()
     .transform((value) => (value ? value : undefined)),
+  resumeText: z
+    .string()
+    .trim()
+    .optional()
+    .transform((value) => (value ? value : undefined)),
 });
 
 export async function POST(request: Request) {
@@ -30,81 +35,154 @@ export async function POST(request: Request) {
 
     const formData = await request.formData();
     const file = formData.get("resume");
-    const { targetRole } = requestSchema.parse({
+    const { targetRole, resumeText } = requestSchema.parse({
       targetRole:
         typeof formData.get("targetRole") === "string"
           ? formData.get("targetRole")
           : undefined,
+      resumeText:
+        typeof formData.get("resumeText") === "string"
+          ? formData.get("resumeText")
+          : undefined,
     });
 
-    if (!(file instanceof File)) {
-      return NextResponse.json(
-        { error: "A PDF or DOCX resume file is required." },
-        { status: 400 },
-      );
+    let extractedText = resumeText ?? "";
+    let sourceLabel = "pasted-resume.txt";
+
+    if (!resumeText) {
+      if (!(file instanceof File)) {
+        return NextResponse.json(
+          { error: "Upload a PDF or DOCX resume, or paste resume text manually." },
+          { status: 400 },
+        );
+      }
+
+      const fileName = file.name.trim();
+      const lowercaseName = fileName.toLowerCase();
+      const isSupportedFile =
+        SUPPORTED_RESUME_TYPES.has(file.type) ||
+        SUPPORTED_RESUME_EXTENSIONS.some((extension) =>
+          lowercaseName.endsWith(extension),
+        );
+
+      if (!fileName) {
+        return NextResponse.json(
+          { error: "Resume file name is missing." },
+          { status: 400 },
+        );
+      }
+
+      if (!isSupportedFile) {
+        return NextResponse.json(
+          { error: "Unsupported file type. Upload a PDF or DOCX resume." },
+          { status: 400 },
+        );
+      }
+
+      if (file.size <= 0) {
+        return NextResponse.json(
+          { error: "Uploaded resume file is empty." },
+          { status: 400 },
+        );
+      }
+
+      if (!Number.isFinite(file.size) || file.size > MAX_RESUME_FILE_SIZE) {
+        return NextResponse.json(
+          { error: "File too large. Resume files must be 5 MB or smaller." },
+          { status: 400 },
+        );
+      }
+
+      let buffer: Buffer;
+      try {
+        const arrayBuffer = await file.arrayBuffer();
+        buffer = Buffer.from(arrayBuffer);
+      } catch (error) {
+        console.error("Resume upload buffer conversion failed", error);
+        return NextResponse.json(
+          { error: "Could not upload the resume file. Please try again." },
+          { status: 400 },
+        );
+      }
+
+      if (!Buffer.isBuffer(buffer) || buffer.length === 0) {
+        return NextResponse.json(
+          { error: "Uploaded resume file is empty." },
+          { status: 400 },
+        );
+      }
+
+      try {
+        extractedText = await extractResumeTextWithFallback(
+          fileName,
+          file.type,
+          buffer,
+        );
+        sourceLabel = fileName;
+      } catch (error) {
+        console.error("Resume extraction failed", error);
+
+        return NextResponse.json(
+          {
+            error:
+              "This PDF seems image-based or unreadable. Please upload a text-based PDF or DOCX.",
+          },
+          { status: 400 },
+        );
+      }
     }
 
-    const fileName = file.name.trim();
-    const lowercaseName = fileName.toLowerCase();
-
-    if (
-      !SUPPORTED_RESUME_TYPES.has(file.type) &&
-      !SUPPORTED_RESUME_EXTENSIONS.some((extension) =>
-        lowercaseName.endsWith(extension),
-      )
-    ) {
-      return NextResponse.json(
-        { error: "Unsupported file type. Upload a PDF or DOCX resume." },
-        { status: 400 },
-      );
-    }
-
-    if (file.size > MAX_RESUME_FILE_SIZE) {
-      return NextResponse.json(
-        { error: "File too large. Resume files must be 5 MB or smaller." },
-        { status: 400 },
-      );
-    }
-
-    const buffer = Buffer.from(await file.arrayBuffer());
-    const extractedText = await extractResumeTextWithFallback(
-      fileName,
-      file.type,
-      buffer,
-    );
-
-    if (extractedText.length < 80) {
+    if (extractedText.trim().length < 50) {
       return NextResponse.json(
         {
           error:
-            "Could not extract enough readable text from this resume. Try another PDF or DOCX file.",
+            "This PDF seems image-based or unreadable. Please upload a text-based PDF or DOCX.",
         },
         { status: 400 },
       );
     }
 
-    const analysis = await generateResumeAnalysis({
-      resumeText: extractedText,
-      targetRole,
-    });
-    const normalizedAnalysis = {
-      ...analysis,
-      missingSkills:
-        analysis.missingSkills.length > 0
-          ? analysis.missingSkills
-          : analysis.missingKeywords,
-      missingKeywords:
-        analysis.missingKeywords.length > 0
-          ? analysis.missingKeywords
-          : analysis.missingSkills,
-    };
+    let analysis;
+    try {
+      analysis = await generateResumeAnalysis({
+        resumeText: extractedText,
+        targetRole,
+      });
+    } catch (error) {
+      console.error("Resume AI analysis failed", error);
+      throw error;
+    }
 
-    const analysisId = await saveResumeAnalysis({
-      clerkUserId: userId,
-      resumeFilename: fileName,
-      extractedText,
-      analysis: normalizedAnalysis,
-    });
+    let normalizedAnalysis;
+    try {
+      normalizedAnalysis = {
+        ...analysis,
+        missingSkills:
+          analysis.missingSkills.length > 0
+            ? analysis.missingSkills
+            : analysis.missingKeywords,
+        missingKeywords:
+          analysis.missingKeywords.length > 0
+            ? analysis.missingKeywords
+            : analysis.missingSkills,
+      };
+    } catch (error) {
+      console.error("Resume score normalization failed", error);
+      throw new Error("Resume score generation failed.", { cause: error });
+    }
+
+    let analysisId: string;
+    try {
+      analysisId = await saveResumeAnalysis({
+        clerkUserId: userId,
+        resumeFilename: sourceLabel,
+        extractedText,
+        analysis: normalizedAnalysis,
+      });
+    } catch (error) {
+      console.error("Resume analysis persistence failed", error);
+      throw error;
+    }
 
     return NextResponse.json({
       analysisId,
@@ -131,9 +209,12 @@ export async function POST(request: Request) {
       );
     }
 
-    if (/extract/i.test(message) || /unsupported/i.test(message)) {
+    if (/image-based|unreadable|extract|unsupported|valid pdf|empty|docx/i.test(message)) {
       return NextResponse.json(
-        { error: "Could not extract text from the uploaded resume." },
+        {
+          error:
+            "This PDF seems image-based or unreadable. Please upload a text-based PDF or DOCX.",
+        },
         { status: 400 },
       );
     }

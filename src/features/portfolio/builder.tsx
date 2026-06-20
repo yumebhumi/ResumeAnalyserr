@@ -110,7 +110,7 @@ export function PortfolioBuilder({
       });
 
       const payload = (await response.json()) as {
-        draftId?: string;
+        draftId?: string | null;
         portfolio?: {
           name?: string;
           role?: string;
@@ -123,14 +123,16 @@ export function PortfolioBuilder({
           linkedin?: string;
           email?: string;
         };
+        saveStatus?: "saved" | "failed" | "skipped";
+        saveError?: string | null;
         error?: string;
       };
 
-      if (!response.ok || !payload.draftId) {
+      if (!response.ok || !payload.portfolio) {
         throw new Error(payload.error || "Could not generate portfolio.");
       }
 
-      setDraftId(payload.draftId);
+      setDraftId(payload.draftId ?? null);
       if (payload.portfolio) {
         setForm((current) => ({
           ...current,
@@ -160,12 +162,28 @@ export function PortfolioBuilder({
           email: payload.portfolio?.email ?? current.email,
         }));
       }
-      setToast({
-        type: "success",
-        message: "Portfolio draft generated and saved.",
-      });
 
-      if (payload.draftId !== draftId) {
+      if (payload.saveStatus === "failed") {
+        setToast({
+          type: "error",
+          message:
+            payload.saveError ||
+            "Database save failed while storing the portfolio draft.",
+        });
+      } else if (payload.saveStatus === "skipped") {
+        setToast({
+          type: "error",
+          message:
+            payload.saveError || "Please sign in to save your portfolio draft.",
+        });
+      } else {
+        setToast({
+          type: "success",
+          message: "Portfolio draft generated and saved.",
+        });
+      }
+
+      if (payload.draftId && payload.draftId !== draftId) {
         router.replace(`/portfolio/${payload.draftId}`);
       }
     } catch (error) {

@@ -37,6 +37,7 @@ const scoreCards = [
 export function AnalyzeForm() {
   const [targetRole, setTargetRole] = useState("");
   const [file, setFile] = useState<File | null>(null);
+  const [resumeText, setResumeText] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<AnalyzeResumeResponse | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -70,8 +71,8 @@ export function AnalyzeForm() {
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
-    if (!file) {
-      setError("Select a PDF or DOCX resume to continue.");
+    if (!file && !resumeText.trim()) {
+      setError("Upload a PDF or DOCX resume, or paste resume text manually.");
       return;
     }
 
@@ -82,10 +83,16 @@ export function AnalyzeForm() {
 
     try {
       const formData = new FormData();
-      formData.append("resume", file);
+      if (file) {
+        formData.append("resume", file);
+      }
 
       if (targetRole.trim()) {
         formData.append("targetRole", targetRole.trim());
+      }
+
+      if (resumeText.trim()) {
+        formData.append("resumeText", resumeText.trim());
       }
 
       const response = await fetch("/api/analyze-resume", {
@@ -133,11 +140,14 @@ export function AnalyzeForm() {
     }
   }
 
-  const hasResumeState = Boolean(file || result || targetRole.trim() || error);
+  const hasResumeState = Boolean(
+    file || result || targetRole.trim() || resumeText.trim() || error,
+  );
 
   function resetResumeAnalysis() {
     setTargetRole("");
     setFile(null);
+    setResumeText("");
     setError(null);
     setResult(null);
     setIsSubmitting(false);
@@ -193,6 +203,22 @@ export function AnalyzeForm() {
             </div>
           </label>
         </div>
+
+        <label className="space-y-2">
+          <span className="text-sm font-medium text-[#FAF3E0]">
+            Resume text fallback
+          </span>
+          <textarea
+            value={resumeText}
+            onChange={(event) => setResumeText(event.target.value)}
+            placeholder="If file extraction fails, paste your resume text here and analyze it directly."
+            rows={8}
+            className="w-full rounded-[18px] border border-[rgba(250,243,224,0.08)] bg-[#221e1d] px-4 py-3 text-sm text-white outline-none transition placeholder:text-[#8f887f] focus:border-[#C08457]"
+          />
+          <p className="text-xs text-[#D6D3D1]">
+            Upload a file, paste resume text, or use both. Pasted text is analyzed on the server when provided.
+          </p>
+        </label>
 
         <div className="flex flex-wrap gap-3">
           <button

@@ -53,20 +53,34 @@ const requestSchema = z.object({
 export async function POST(request: Request) {
   const { userId: clerkUserId } = await auth();
 
-  if (!clerkUserId) {
-    return NextResponse.json({ error: "Unauthorized." }, { status: 401 });
-  }
-
   try {
     const rawBody = await request.json();
     const body = requestSchema.parse(rawBody);
-    const db = getDb();
-    await ensureAppSchema();
-    const [user] = await db
-      .select({ id: users.id })
-      .from(users)
-      .where(eq(users.clerkUserId, clerkUserId))
-      .limit(1);
+    const db = clerkUserId ? getDb() : null;
+    const sanitizedSections = sectionsSchema.parse({
+      ...body.sections,
+      name: normalizeString(body.sections.name),
+      role: normalizeString(body.sections.role),
+      about: normalizeString(body.sections.about),
+      skills: normalizeStringArray(body.sections.skills),
+      projects: normalizeStringArray(body.sections.projects),
+      experience: normalizeStringArray(body.sections.experience),
+      education: normalizeStringArray(body.sections.education),
+      githubLink: normalizeString(body.sections.githubLink),
+      linkedinLink: normalizeString(body.sections.linkedinLink),
+      email: normalizeString(body.sections.email),
+    });
+
+    let user: { id: string } | undefined;
+
+    if (clerkUserId && db) {
+      await ensureAppSchema();
+      [user] = await db
+        .select({ id: users.id })
+        .from(users)
+        .where(eq(users.clerkUserId, clerkUserId))
+        .limit(1);
+    }
 
     const [analysis] = user
       ? body.resumeAnalysisId
@@ -100,45 +114,76 @@ export async function POST(request: Request) {
       template: body.template,
       resumeText: analysis?.extractedText,
       analysis: analysis?.analysisJson ?? null,
-      current: body.sections,
+      current: sanitizedSections,
     });
 
     const mergedSections = sectionsSchema.parse({
-      ...body.sections,
-      name: portfolio.name || body.sections.name,
-      role: portfolio.role || body.sections.role,
-      about: portfolio.about || body.sections.about,
-      skills: portfolio.skills.length > 0 ? portfolio.skills : body.sections.skills,
+      ...sanitizedSections,
+      name: portfolio.name || sanitizedSections.name,
+      role: portfolio.role || sanitizedSections.role,
+      about: portfolio.about || sanitizedSections.about,
+      skills:
+        portfolio.skills.length > 0 ? portfolio.skills : sanitizedSections.skills,
       projects:
-        portfolio.projects.length > 0 ? portfolio.projects : body.sections.projects,
+        portfolio.projects.length > 0
+          ? portfolio.projects
+          : sanitizedSections.projects,
       experience:
         portfolio.experience.length > 0
           ? portfolio.experience
-          : body.sections.experience,
+          : sanitizedSections.experience,
       education:
         portfolio.education.length > 0
           ? portfolio.education
-          : body.sections.education,
-      githubLink: portfolio.github || body.sections.githubLink,
-      linkedinLink: portfolio.linkedin || body.sections.linkedinLink,
-      email: portfolio.email || body.sections.email,
+          : sanitizedSections.education,
+      githubLink: portfolio.github || sanitizedSections.githubLink,
+      linkedinLink: portfolio.linkedin || sanitizedSections.linkedinLink,
+      email: portfolio.email || sanitizedSections.email,
     });
 
-    const draftId = await savePortfolioDraft({
-      clerkUserId,
-      draftId: body.draftId,
-      template: body.template,
-      sections: mergedSections,
+    const responsePortfolio = generatedPortfolioSchema.parse({
+      ...portfolio,
+      github: mergedSections.githubLink,
+      linkedin: mergedSections.linkedinLink,
+      email: mergedSections.email,
     });
+
+    if (!clerkUserId) {
+      return NextResponse.json({
+        draftId: null,
+        portfolio: responsePortfolio,
+        saveStatus: "skipped",
+        saveError: "Please sign in to save your portfolio draft.",
+      });
+    }
+
+    let draftId: string | null = null;
+    let saveStatus: "saved" | "failed" = "saved";
+    let saveError: string | null = null;
+
+    try {
+      draftId = await savePortfolioDraft({
+        clerkUserId,
+        draftId: body.draftId,
+        template: body.template,
+        sections: mergedSections,
+      });
+    } catch (error) {
+      console.error("Portfolio draft save failed", {
+        error,
+        draftId: body.draftId,
+        hasResumeAnalysis: Boolean(analysis?.id),
+        clerkUserId,
+      });
+      saveStatus = "failed";
+      saveError = "Database save failed while storing the portfolio draft.";
+    }
 
     return NextResponse.json({
       draftId,
-      portfolio: generatedPortfolioSchema.parse({
-        ...portfolio,
-        github: mergedSections.githubLink,
-        linkedin: mergedSections.linkedinLink,
-        email: mergedSections.email,
-      }),
+      portfolio: responsePortfolio,
+      saveStatus,
+      saveError,
     });
   } catch (error) {
     if (error instanceof z.ZodError) {
@@ -164,4 +209,17 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ error: message }, { status: 500 });
   }
+}
+
+function normalizeString(value: unknown) {
+  return typeof value === "string" ? value.trim() : "";
+}
+
+function normalizeStringArray(value: unknown) {
+  return Array.isArray(value)
+    ? value
+        .filter((item): item is string => typeof item === "string")
+        .map((item) => item.trim())
+        .filter(Boolean)
+    : [];
 }
